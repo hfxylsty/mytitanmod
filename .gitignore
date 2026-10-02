@@ -1,0 +1,63 @@
+# ===== 泰坦模组工程 .gitignore =====
+# 说明：本仓库只收源码与文档。工具链、缓存、临时产物一律不入库。
+
+# --- 与 ChatGPT 的通信辅助器（不属于本工程，且含令牌）---
+bridge/
+
+# --- 跨会话任务队列（协作基建，与第二个 DSH 会话耦合，不入库）---
+tasks/
+
+# --- 本地工具链（体积大，可重新下载）---
+.tools/
+.gradle-home/
+.acl-recovery/
+
+# --- 临时与调查产物 ---
+.tmp/
+
+# --- 构建产物 ---
+build/
+out/
+bin/
+*.class
+*.jar
+!gradle/wrapper/gradle-wrapper.jar
+
+# --- Gradle ---
+.gradle/
+gradle-app.setting
+.gradletasknamecache
+
+# --- IDE ---
+.idea/
+*.iml
+*.ipr
+*.iws
+.vscode/
+.settings/
+.project
+.classpath
+.eclipse/
+run/
+
+# --- 操作系统 ---
+Thumbs.db
+Desktop.ini
+desktop.ini
+.DS_Store
+
+# --- 日志与崩溃报告 ---
+*.log
+hs_err_pid*.log
+replay_pid*.log
+logs/
+
+# --- 本地配置与密钥 ---
+*.token
+token.txt
+secrets.properties
+local.properties
+*.local
+
+# --- DSH 会话态 ---
+.dsh/

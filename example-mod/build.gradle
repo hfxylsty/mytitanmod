@@ -1,0 +1,24 @@
+plugins {
+    id 'java'
+    id 'net.neoforged.moddev' version '2.0.143'
+}
+
+group = 'com.titanmod'
+version = '1.0.0'
+
+neoForge {
+    version = '21.1.252'
+    runs {
+        client { client() }
+        server { server() }
+    }
+    mods {
+        titanmod {
+            sourceSet sourceSets.main
+        }
+    }
+}
+
+java {
+    toolchain { languageVersion = JavaLanguageVersion.of(21) }
+}
