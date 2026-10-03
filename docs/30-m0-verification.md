@@ -59,10 +59,21 @@
 
 ## 四、编译期踩到的坑（已解决）
 
-| 坑 | 现象 | 修法 |
+| 坑 | 现象（报错原文） | 修法 |
 |---|---|---|
-| 类名与文件名不一致 | `TitanZombie.java` 里写的却是 `public class TitanZombie`，文件却是 `TitanZombie.java`… 实际是首版文件名拼写不一致 | 对齐文件名与类名 |
 | 缺少抽象方法实现 | `TitanPart 不是抽象的, 并且未覆盖 Entity 中的抽象方法 defineSynchedData(Builder)` | 补 `defineSynchedData(SynchedEntityData.Builder)` 空实现（原版 `EnderDragonPart` 同样为空实现） |
+| ModDevGradle 没有 `setForceExit` | `Could not find method setForceExit() for arguments [false] on Run[gameTestServer]` | 该 API 属于 NeoGradle，不适用于 ModDevGradle 2.0.143；删除该行 |
+
+### 附带发现：物品注册了但物品栏里没有
+
+第一次 `runClient` 后用户反馈"没有僵尸泰坦生成蛋"。原因不是注册失败，而是
+**物品注册进 `Registries.ITEM` 并不会自动出现在创造模式物品栏里**——
+必须显式加入某个 `CreativeModeTab` 的展示列表。
+
+修法：新增 `ModCreativeTabs`，用 `DeferredRegister.create(Registries.CREATIVE_MODE_TAB, MODID)`
+注册本模组分组 `titanreborn:main`，在 `displayItems(...)` 里逐个 `output.accept(...)`。
+
+> **这是新手的经典误区，已回写本文件与 `02-architecture.md` 的注册体系一节。**
 
 ## 五、M0.3 多部件实现（依据 NeoForge 官方机制）
 

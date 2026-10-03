@@ -1,4 +1,11 @@
 {
+  "itemGroup.titanreborn.main": "Titan Reborn",
+  "entity.titanreborn.titan_zombie": "Titan Zombie",
   "item.titanreborn.titan_zombie_spawn_egg": "Titan Zombie Spawn Egg",
-  "entity.titanreborn.titan_zombie": "Titan Zombie"
+  "item.titanreborn.fellcore_shard": "Fellcore Shard",
+  "item.titanreborn.fellcore_ingot": "Fellcore Ingot",
+  "item.titanreborn.titan_bone": "Titan Bone",
+  "item.titanreborn.quickening_ichor": "Quickening Ichor",
+  "item.titanreborn.titan_echo": "Titan Echo",
+  "item.titanreborn.marrow_maul": "Marrow Maul"
 }

@@ -1,4 +1,11 @@
 {
+  "itemGroup.titanreborn.main": "泰坦重生",
+  "entity.titanreborn.titan_zombie": "僵尸泰坦",
   "item.titanreborn.titan_zombie_spawn_egg": "僵尸泰坦生成蛋",
-  "entity.titanreborn.titan_zombie": "僵尸泰坦"
+  "item.titanreborn.fellcore_shard": "陨核碎片",
+  "item.titanreborn.fellcore_ingot": "陨核锭",
+  "item.titanreborn.titan_bone": "泰坦骨骼",
+  "item.titanreborn.quickening_ichor": "催生灵液",
+  "item.titanreborn.titan_echo": "泰坦残响",
+  "item.titanreborn.marrow_maul": "裂骨战锤"
 }

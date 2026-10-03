@@ -18,8 +18,10 @@ public class TitanReborn {
     public static final String MODID = "titanreborn";
 
     public TitanReborn(IEventBus bus) {
-        // M0.2: 实体与物品注册
+        // 实体与物品
         ModEntities.ENTITY_TYPES.register(bus);
         ModItems.ITEMS.register(bus);
+        // 创造模式物品栏分组（不加这行，物品注册了也不会出现在物品栏里）
+        ModCreativeTabs.CREATIVE_MODE_TABS.register(bus);
     }
 }

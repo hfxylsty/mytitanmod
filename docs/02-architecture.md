@@ -73,9 +73,37 @@ public class TitanReborn {
 |---|---|---|
 | 物品 | `DeferredRegister.createItems(MODID)` | 返回 `DeferredRegister.Items` |
 | 方块 | `DeferredRegister.createBlocks(MODID)` | 返回 `DeferredRegister.Blocks` |
+| 创造物品栏分组 | `DeferredRegister.create(Registries.CREATIVE_MODE_TAB, MODID)` | **必写，否则物品栏里看不到物品**（见 2.4） |
 | 其他（实体、音效、粒子…） | `DeferredRegister.create(Registry, MODID)` | 通用形式 |
 | 实体类型 | `DeferredRegister.create(Registries.ENTITY_TYPE, MODID)` | 无专用便捷方法，用通用形式 |
 | 数据组件 | `DeferredRegister.createDataComponents(MODID)` | 自定义组件用 |
+
+### 2.4 物品注册了 ≠ 物品栏里有（M0 实测踩到的坑）
+
+**注册进 `Registries.ITEM` 只是让物品"存在于注册表"，不会自动出现在创造模式物品栏。**
+必须显式加入某个 `CreativeModeTab` 的展示列表，否则玩家的表现就是"这个物品不存在"。
+
+```java
+public final class ModCreativeTabs {
+    public static final DeferredRegister<CreativeModeTab> CREATIVE_MODE_TABS =
+            DeferredRegister.create(Registries.CREATIVE_MODE_TAB, TitanReborn.MODID);
+
+    public static final DeferredHolder<CreativeModeTab, CreativeModeTab> MAIN =
+            CREATIVE_MODE_TABS.register("main", () -> CreativeModeTab.builder()
+                    .title(Component.translatable("itemGroup." + TitanReborn.MODID + ".main"))
+                    .icon(() -> new ItemStack(ModItems.FELLCORE_INGOT.get()))
+                    .displayItems((parameters, output) -> {
+                        // 新增物品必须在这里登记
+                        output.accept(ModItems.FELLCORE_SHARD.get());
+                    })
+                    .build());
+}
+```
+
+语言文件里必须有 `itemGroup.titanreborn.main`，否则分组名显示为原始键名。
+
+> 已核验：`Registries.CREATIVE_MODE_TAB`、`CreativeModeTab.builder()`、
+> Builder 的 `title(Component)` / `icon(Supplier<ItemStack>)` / `displayItems(DisplayItemsGenerator)`。
 
 便捷注册方法（已核验签名）：
 
