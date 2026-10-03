@@ -1,0 +1,25 @@
+{
+  "base_bounds": {
+    "min": [
+      -128,
+      0,
+      -72
+    ],
+    "max": [
+      128,
+      512,
+      64
+    ]
+  },
+  "bones": 23,
+  "cubes": 60,
+  "unique_uv_faces": 360,
+  "uv_overlap": false,
+  "animations": [
+    "animation.titan_zombie.idle",
+    "animation.titan_zombie.walk",
+    "animation.titan_zombie.attack"
+  ],
+  "attack_loop": false,
+  "verified": "JSON structure, bounds, UV, animation bone references; not tested in Minecraft or Blockbench"
+}

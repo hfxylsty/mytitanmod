@@ -1,0 +1,16 @@
+僵尸泰坦 — Java版Minecraft模组临时模型
+
+1. 编辑：在Blockbench中打开 titan_zombie.bbmodel（通用可动画工程，内嵌贴图）。
+2. Java模组 + GeckoLib：复制 assets/titanreborn 到模组资源目录。geo.json是GeckoLib在Java版中的模型资源格式，不是基岩版游戏附加包。idle/walk/attack名称按规格保留。
+3. 普通Java ModelPart：TitanZombieModel.java 为 Minecraft 1.21.1 NeoForge Mojmap API参考源码，使用 titan_zombie_java.png（1024×1024，独立box UV），不能使用256贴图替代。需要修改包名、注册模型层、绑定实体渲染器，并根据目标版本适配API。此源码未在你的模组中编译；不要视为已经接入。
+4. Java源码使用1/8坐标，渲染时放大8倍，总高32格。GeckoLib资源使用512像素全尺寸，渲染器不要再放大16倍，否则尺寸错误。
+5. preview.html 为离线旋转、待机/行走/攻击预览，可勾选护甲。预览不替代游戏运行验证。
+6. 三块胸前甲片为独立bone_plate_0/1/2，位于-Z正面。按用户反馈改为原版僵尸身形：本体高32格、视觉宽16格（取代原文档8格宽）。若代码碰撞箱仍为8格宽，需要自行决定是否同步调整。原规格贴图256×256，面UV独立，不重叠。
+7. 护甲层立方体外扩3像素，贴图alpha=140；需要透明渲染层及低血量触发代码。Java参考源码未包含护甲渲染层。
+8. 剑与粒子没有烘进本体。GeckoLib右手父骨骼right_arm的握点相对pivot约(0,-176,0)，前臂动画也需同步时请绑定right_arm_lower，相对pivot约(0,-88,0)。请在渲染器中接入放大的铁剑，并添加橙黄色粒子。
+9. attack动画1.2秒，右臂蓄力后挥下；idle 3秒，walk 1.6秒。普通Java源码仅提供近似基础动画，精确关键帧见animation.json。
+10. 贴图程序自绘，参考用户提供的原版僵尸视觉，不包含原模组素材。此包是临时模型，正式接入后需在游戏内验证朝向、持剑和碰撞箱。
+
+追加：已提供独立 titan_iron_sword.bbmodel、titan_iron_sword.geo.json 和贴图。剑长172像素（10.75格，含剑柄），剑刃128像素（8格）。preview.html中的铁剑随右臂/前臂动画移动。主模型仍不烘入剑。接入时可选择渲染原版IRON_SWORD或这一独立剑模型，不要重复渲染。自定义剑root/sword握点为(0,0,0)，预览右手坐标(-96,204,-16)，相对right_arm_lower为(0,-84,-16)。
+
+追加：已提供独立 titan_iron_sword.bbmodel、titan_iron_sword.geo.json 和贴图。剑长172像素（10.75格，含剑柄），剑刃128像素（8格）。preview.html中的铁剑随右臂/前臂动画移动。主模型仍不烘入剑。接入时可选择渲染原版IRON_SWORD或这一独立剑模型，不要重复渲染。自定义剑root/sword握点为(0,0,0)，预览右手坐标(-96,204,-40)，相对right_arm_lower为(0,-84,-40)。

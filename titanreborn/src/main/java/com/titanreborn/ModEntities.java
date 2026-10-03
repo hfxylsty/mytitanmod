@@ -28,17 +28,20 @@ public final class ModEntities {
     /**
      * 僵尸泰坦。
      *
-     * <p><b>体型依据原版设定</b>：32 格高 × 8 格宽（≈16 倍僵尸）。
-     * 碰撞箱必须与模型尺寸严格对应，否则会出现"看着打中了却打不到"：
-     * 模型 512 像素高 = 32 格，128 像素宽 = 8 格（1 格 = 16 像素）。
+     * <p><b>体型：32 格高 × 16 格宽</b>（≈16 倍僵尸）。
+     * 碰撞箱必须与模型严格对应，否则会"看着打中了却打不到"：
+     * 模型包围盒 X[-128,128] Y[0,512] → 256 × 512 像素 = <b>16 × 32 格</b>（1 格 = 16 像素）。
+     *
+     * <p>宽度依据：模型交付包标注 "BOSS / 32 blocks high / 16 blocks wide"，
+     * 且 `validation.json` 的 base_bounds 为 min[-128,0,-72] max[128,512,64]，
+     * 故宽取 <b>16</b>（早期文档里的 8 格是过时值，已更正）。
      *
      * <p>追踪范围给 32：32 格高的实体在默认 5 区块下会在视野里"突然出现"。
-     * 更新间隔给 2，降低巨型实体的同步开销。
      */
     public static final DeferredHolder<EntityType<?>, EntityType<TitanZombie>> TITAN_ZOMBIE =
             ENTITY_TYPES.register("titan_zombie",
                     () -> EntityType.Builder.of(TitanZombie::new, MobCategory.MONSTER)
-                            .sized(8.0F, 32.0F)
+                            .sized(16.0F, 32.0F)
                             .clientTrackingRange(32)
                             .updateInterval(2)
                             .build("titan_zombie"));

@@ -46,9 +46,27 @@ public class TitanZombie extends Monster implements GeoEntity {
 
     private static final Logger LOGGER = LoggerFactory.getLogger("titanreborn/part");
 
-    /** 部件偏移：x=横向(右为正)，y=高度，z=前后(前为正)，单位=方块。 */
-    private static final double PLATE_HEIGHT = 7.0D;
-    private static final double PLATE_FORWARD = 0.7D;
+    // ---- 多部件偏移 ----
+    // 单位：方块。x=横向(右为正)，y=高度(脚底为 0)，z=前后(**-Z 是正面**)。
+    // 数值直接取自交付模型 ge o的骨骼 pivot 与立方体范围（1 格 = 16 像素）：
+    //   head          pivot(0,384,0)         → (0, 24.0, 0)
+    //   bone_plate_0  pivot(-34,312,-37)     → (-2.125, 19.5, -2.3125)
+    //   bone_plate_1  pivot(-2,298,-37)      → (-0.125, 18.625, -2.3125)
+    //   bone_plate_2  pivot(30,312,-37)      → (1.875, 19.5, -2.3125)
+    // 注意：模型正面朝 -Z，所以甲片的 z 是负值。
+
+    /** 三片腐骨甲片的中心偏移（必须与模型骨骼对位，否则"看得见打不到"）。 */
+    private static final Vec3[] PLATE_OFFSETS = {
+            new Vec3(-2.125D, 19.50D, -2.3125D),
+            new Vec3(-0.125D, 18.625D, -2.3125D),
+            new Vec3(1.875D, 19.50D, -2.3125D),
+    };
+
+    /** 头部部件中心（模型 head 中心约 Y=448 像素 = 28 格）。 */
+    private static final Vec3 HEAD_OFFSET = new Vec3(0.0D, 28.0D, 0.0D);
+
+    /** 躯干中心（模型 torso 段约 Y=152~368 像素）。 */
+    private static final Vec3 TORSO_OFFSET = new Vec3(0.0D, 16.25D, 0.0D);
 
     // ---- GeckoLib 动画（M0.4）----
 
@@ -76,12 +94,13 @@ public class TitanZombie extends Monster implements GeoEntity {
         this.xpReward = 500;
 
         // 部件在构造时建好并缓存（NeoForge 注释要求 getParts() 返回缓存值）
-        this.head = new TitanPart(this, "head", 3.0F, 3.0F, new Vec3(0.0D, 10.5D, 1.2D));
-        this.chest = new TitanPart(this, "chest", 4.0F, 4.0F, new Vec3(0.0D, 6.5D, 0.5D));
+        // 尺寸按模型对应骨骼的立方体包围盒给（像素/16）
+        this.head = new TitanPart(this, "head", 8.0F, 8.0F, HEAD_OFFSET);
+        this.chest = new TitanPart(this, "chest", 9.0F, 9.0F, TORSO_OFFSET);
         this.bonePlates = new TitanPart[] {
-                new TitanPart(this, "bone_plate_0", 1.6F, 1.6F, new Vec3(-1.2D, PLATE_HEIGHT, PLATE_FORWARD)),
-                new TitanPart(this, "bone_plate_1", 1.6F, 1.6F, new Vec3(0.0D, PLATE_HEIGHT, PLATE_FORWARD)),
-                new TitanPart(this, "bone_plate_2", 1.6F, 1.6F, new Vec3(1.2D, PLATE_HEIGHT, PLATE_FORWARD)),
+                new TitanPart(this, "bone_plate_0", 1.75F, 3.0F, PLATE_OFFSETS[0]),
+                new TitanPart(this, "bone_plate_1", 1.75F, 3.0F, PLATE_OFFSETS[1]),
+                new TitanPart(this, "bone_plate_2", 1.75F, 3.0F, PLATE_OFFSETS[2]),
         };
         this.parts = new TitanPart[] { head, chest, bonePlates[0], bonePlates[1], bonePlates[2] };
     }

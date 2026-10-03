@@ -1,0 +1,1060 @@
+{
+  "meta": {
+    "format_version": "4.10",
+    "model_format": "free",
+    "box_uv": false
+  },
+  "name": "titan_iron_sword",
+  "resolution": {
+    "width": 256,
+    "height": 256
+  },
+  "elements": [
+    {
+      "uuid": "7a327ec1-8fed-43e0-9893-e04332833b68",
+      "name": "iron_sword",
+      "type": "cube",
+      "from": [
+        -5,
+        -20,
+        -5
+      ],
+      "to": [
+        5,
+        -12,
+        5
+      ],
+      "origin": [
+        0,
+        0,
+        0
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "faces": {
+        "south": {
+          "uv": [
+            1,
+            150,
+            3,
+            152
+          ],
+          "texture": 0
+        },
+        "north": {
+          "uv": [
+            4,
+            150,
+            6,
+            152
+          ],
+          "texture": 0
+        },
+        "east": {
+          "uv": [
+            7,
+            150,
+            9,
+            152
+          ],
+          "texture": 0
+        },
+        "west": {
+          "uv": [
+            10,
+            150,
+            12,
+            152
+          ],
+          "texture": 0
+        },
+        "up": {
+          "uv": [
+            13,
+            150,
+            15,
+            152
+          ],
+          "texture": 0
+        },
+        "down": {
+          "uv": [
+            16,
+            150,
+            18,
+            152
+          ],
+          "texture": 0
+        }
+      },
+      "visibility": true,
+      "export": true,
+      "autouv": 0
+    },
+    {
+      "uuid": "05b2db9c-fd8d-4869-9380-72b6ac03b154",
+      "name": "iron_sword",
+      "type": "cube",
+      "from": [
+        -4,
+        -12,
+        -4
+      ],
+      "to": [
+        4,
+        16,
+        4
+      ],
+      "origin": [
+        0,
+        0,
+        0
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "faces": {
+        "south": {
+          "uv": [
+            19,
+            150,
+            21,
+            157
+          ],
+          "texture": 0
+        },
+        "north": {
+          "uv": [
+            22,
+            150,
+            24,
+            157
+          ],
+          "texture": 0
+        },
+        "east": {
+          "uv": [
+            25,
+            150,
+            27,
+            157
+          ],
+          "texture": 0
+        },
+        "west": {
+          "uv": [
+            28,
+            150,
+            30,
+            157
+          ],
+          "texture": 0
+        },
+        "up": {
+          "uv": [
+            31,
+            150,
+            33,
+            152
+          ],
+          "texture": 0
+        },
+        "down": {
+          "uv": [
+            34,
+            150,
+            36,
+            152
+          ],
+          "texture": 0
+        }
+      },
+      "visibility": true,
+      "export": true,
+      "autouv": 0
+    },
+    {
+      "uuid": "ebe88b25-82c5-414a-b048-94ed6f524ad6",
+      "name": "iron_sword",
+      "type": "cube",
+      "from": [
+        -5,
+        -8,
+        -5
+      ],
+      "to": [
+        5,
+        -5,
+        5
+      ],
+      "origin": [
+        0,
+        0,
+        0
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "faces": {
+        "south": {
+          "uv": [
+            37,
+            150,
+            39,
+            152
+          ],
+          "texture": 0
+        },
+        "north": {
+          "uv": [
+            40,
+            150,
+            42,
+            152
+          ],
+          "texture": 0
+        },
+        "east": {
+          "uv": [
+            43,
+            150,
+            45,
+            152
+          ],
+          "texture": 0
+        },
+        "west": {
+          "uv": [
+            46,
+            150,
+            48,
+            152
+          ],
+          "texture": 0
+        },
+        "up": {
+          "uv": [
+            49,
+            150,
+            51,
+            152
+          ],
+          "texture": 0
+        },
+        "down": {
+          "uv": [
+            52,
+            150,
+            54,
+            152
+          ],
+          "texture": 0
+        }
+      },
+      "visibility": true,
+      "export": true,
+      "autouv": 0
+    },
+    {
+      "uuid": "9fa25d9c-2392-4901-b67e-45fabd12b6a9",
+      "name": "iron_sword",
+      "type": "cube",
+      "from": [
+        -5,
+        0,
+        -5
+      ],
+      "to": [
+        5,
+        3,
+        5
+      ],
+      "origin": [
+        0,
+        0,
+        0
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "faces": {
+        "south": {
+          "uv": [
+            55,
+            150,
+            57,
+            152
+          ],
+          "texture": 0
+        },
+        "north": {
+          "uv": [
+            58,
+            150,
+            60,
+            152
+          ],
+          "texture": 0
+        },
+        "east": {
+          "uv": [
+            61,
+            150,
+            63,
+            152
+          ],
+          "texture": 0
+        },
+        "west": {
+          "uv": [
+            64,
+            150,
+            66,
+            152
+          ],
+          "texture": 0
+        },
+        "up": {
+          "uv": [
+            67,
+            150,
+            69,
+            152
+          ],
+          "texture": 0
+        },
+        "down": {
+          "uv": [
+            70,
+            150,
+            72,
+            152
+          ],
+          "texture": 0
+        }
+      },
+      "visibility": true,
+      "export": true,
+      "autouv": 0
+    },
+    {
+      "uuid": "5c2dc92e-1653-421b-a3aa-859b45dda91d",
+      "name": "iron_sword",
+      "type": "cube",
+      "from": [
+        -5,
+        8,
+        -5
+      ],
+      "to": [
+        5,
+        11,
+        5
+      ],
+      "origin": [
+        0,
+        0,
+        0
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "faces": {
+        "south": {
+          "uv": [
+            73,
+            150,
+            75,
+            152
+          ],
+          "texture": 0
+        },
+        "north": {
+          "uv": [
+            76,
+            150,
+            78,
+            152
+          ],
+          "texture": 0
+        },
+        "east": {
+          "uv": [
+            79,
+            150,
+            81,
+            152
+          ],
+          "texture": 0
+        },
+        "west": {
+          "uv": [
+            82,
+            150,
+            84,
+            152
+          ],
+          "texture": 0
+        },
+        "up": {
+          "uv": [
+            85,
+            150,
+            87,
+            152
+          ],
+          "texture": 0
+        },
+        "down": {
+          "uv": [
+            88,
+            150,
+            90,
+            152
+          ],
+          "texture": 0
+        }
+      },
+      "visibility": true,
+      "export": true,
+      "autouv": 0
+    },
+    {
+      "uuid": "891eca87-8970-4998-8fc0-114898add452",
+      "name": "iron_sword",
+      "type": "cube",
+      "from": [
+        -24,
+        16,
+        -6
+      ],
+      "to": [
+        24,
+        24,
+        6
+      ],
+      "origin": [
+        0,
+        0,
+        0
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "faces": {
+        "south": {
+          "uv": [
+            91,
+            150,
+            103,
+            152
+          ],
+          "texture": 0
+        },
+        "north": {
+          "uv": [
+            104,
+            150,
+            116,
+            152
+          ],
+          "texture": 0
+        },
+        "east": {
+          "uv": [
+            117,
+            150,
+            120,
+            152
+          ],
+          "texture": 0
+        },
+        "west": {
+          "uv": [
+            121,
+            150,
+            124,
+            152
+          ],
+          "texture": 0
+        },
+        "up": {
+          "uv": [
+            125,
+            150,
+            137,
+            153
+          ],
+          "texture": 0
+        },
+        "down": {
+          "uv": [
+            138,
+            150,
+            150,
+            153
+          ],
+          "texture": 0
+        }
+      },
+      "visibility": true,
+      "export": true,
+      "autouv": 0
+    },
+    {
+      "uuid": "17353a5b-f16a-49eb-8301-3580af62d773",
+      "name": "iron_sword",
+      "type": "cube",
+      "from": [
+        -12,
+        24,
+        -4
+      ],
+      "to": [
+        12,
+        132,
+        4
+      ],
+      "origin": [
+        0,
+        0,
+        0
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "faces": {
+        "south": {
+          "uv": [
+            151,
+            150,
+            157,
+            177
+          ],
+          "texture": 0
+        },
+        "north": {
+          "uv": [
+            158,
+            150,
+            164,
+            177
+          ],
+          "texture": 0
+        },
+        "east": {
+          "uv": [
+            165,
+            150,
+            167,
+            177
+          ],
+          "texture": 0
+        },
+        "west": {
+          "uv": [
+            168,
+            150,
+            170,
+            177
+          ],
+          "texture": 0
+        },
+        "up": {
+          "uv": [
+            171,
+            150,
+            177,
+            152
+          ],
+          "texture": 0
+        },
+        "down": {
+          "uv": [
+            178,
+            150,
+            184,
+            152
+          ],
+          "texture": 0
+        }
+      },
+      "visibility": true,
+      "export": true,
+      "autouv": 0
+    },
+    {
+      "uuid": "c2ac3fc0-b6bc-401a-a69d-d8b34430b169",
+      "name": "iron_sword",
+      "type": "cube",
+      "from": [
+        -8,
+        132,
+        -4
+      ],
+      "to": [
+        8,
+        144,
+        4
+      ],
+      "origin": [
+        0,
+        0,
+        0
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "faces": {
+        "south": {
+          "uv": [
+            185,
+            150,
+            189,
+            153
+          ],
+          "texture": 0
+        },
+        "north": {
+          "uv": [
+            190,
+            150,
+            194,
+            153
+          ],
+          "texture": 0
+        },
+        "east": {
+          "uv": [
+            195,
+            150,
+            197,
+            153
+          ],
+          "texture": 0
+        },
+        "west": {
+          "uv": [
+            198,
+            150,
+            200,
+            153
+          ],
+          "texture": 0
+        },
+        "up": {
+          "uv": [
+            201,
+            150,
+            205,
+            152
+          ],
+          "texture": 0
+        },
+        "down": {
+          "uv": [
+            206,
+            150,
+            210,
+            152
+          ],
+          "texture": 0
+        }
+      },
+      "visibility": true,
+      "export": true,
+      "autouv": 0
+    },
+    {
+      "uuid": "c633d8b0-4f59-4c73-99de-18b93ba1b952",
+      "name": "iron_sword",
+      "type": "cube",
+      "from": [
+        -4,
+        144,
+        -4
+      ],
+      "to": [
+        4,
+        152,
+        4
+      ],
+      "origin": [
+        0,
+        0,
+        0
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "faces": {
+        "south": {
+          "uv": [
+            211,
+            150,
+            213,
+            152
+          ],
+          "texture": 0
+        },
+        "north": {
+          "uv": [
+            214,
+            150,
+            216,
+            152
+          ],
+          "texture": 0
+        },
+        "east": {
+          "uv": [
+            217,
+            150,
+            219,
+            152
+          ],
+          "texture": 0
+        },
+        "west": {
+          "uv": [
+            220,
+            150,
+            222,
+            152
+          ],
+          "texture": 0
+        },
+        "up": {
+          "uv": [
+            223,
+            150,
+            225,
+            152
+          ],
+          "texture": 0
+        },
+        "down": {
+          "uv": [
+            226,
+            150,
+            228,
+            152
+          ],
+          "texture": 0
+        }
+      },
+      "visibility": true,
+      "export": true,
+      "autouv": 0
+    },
+    {
+      "uuid": "6db4200a-7b54-4b40-987a-1d4211aa6ed5",
+      "name": "iron_sword",
+      "type": "cube",
+      "from": [
+        -9,
+        26,
+        4
+      ],
+      "to": [
+        -5,
+        128,
+        5
+      ],
+      "origin": [
+        0,
+        0,
+        0
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "faces": {
+        "south": {
+          "uv": [
+            229,
+            150,
+            231,
+            176
+          ],
+          "texture": 0
+        },
+        "north": {
+          "uv": [
+            232,
+            150,
+            234,
+            176
+          ],
+          "texture": 0
+        },
+        "east": {
+          "uv": [
+            235,
+            150,
+            237,
+            176
+          ],
+          "texture": 0
+        },
+        "west": {
+          "uv": [
+            238,
+            150,
+            240,
+            176
+          ],
+          "texture": 0
+        },
+        "up": {
+          "uv": [
+            241,
+            150,
+            243,
+            152
+          ],
+          "texture": 0
+        },
+        "down": {
+          "uv": [
+            244,
+            150,
+            246,
+            152
+          ],
+          "texture": 0
+        }
+      },
+      "visibility": true,
+      "export": true,
+      "autouv": 0
+    },
+    {
+      "uuid": "09d4771a-7a0d-4293-862b-aa10b04173df",
+      "name": "iron_sword",
+      "type": "cube",
+      "from": [
+        5,
+        26,
+        4
+      ],
+      "to": [
+        9,
+        128,
+        5
+      ],
+      "origin": [
+        0,
+        0,
+        0
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "faces": {
+        "south": {
+          "uv": [
+            247,
+            150,
+            249,
+            176
+          ],
+          "texture": 0
+        },
+        "north": {
+          "uv": [
+            250,
+            150,
+            252,
+            176
+          ],
+          "texture": 0
+        },
+        "east": {
+          "uv": [
+            253,
+            150,
+            255,
+            176
+          ],
+          "texture": 0
+        },
+        "west": {
+          "uv": [
+            1,
+            178,
+            3,
+            204
+          ],
+          "texture": 0
+        },
+        "up": {
+          "uv": [
+            4,
+            178,
+            6,
+            180
+          ],
+          "texture": 0
+        },
+        "down": {
+          "uv": [
+            7,
+            178,
+            9,
+            180
+          ],
+          "texture": 0
+        }
+      },
+      "visibility": true,
+      "export": true,
+      "autouv": 0
+    },
+    {
+      "uuid": "89342a52-a671-4288-8e8d-7e568a6216aa",
+      "name": "iron_sword",
+      "type": "cube",
+      "from": [
+        -2,
+        26,
+        4
+      ],
+      "to": [
+        2,
+        132,
+        5
+      ],
+      "origin": [
+        0,
+        0,
+        0
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "faces": {
+        "south": {
+          "uv": [
+            10,
+            178,
+            12,
+            204
+          ],
+          "texture": 0
+        },
+        "north": {
+          "uv": [
+            13,
+            178,
+            15,
+            204
+          ],
+          "texture": 0
+        },
+        "east": {
+          "uv": [
+            16,
+            178,
+            18,
+            204
+          ],
+          "texture": 0
+        },
+        "west": {
+          "uv": [
+            19,
+            178,
+            21,
+            204
+          ],
+          "texture": 0
+        },
+        "up": {
+          "uv": [
+            22,
+            178,
+            24,
+            180
+          ],
+          "texture": 0
+        },
+        "down": {
+          "uv": [
+            25,
+            178,
+            27,
+            180
+          ],
+          "texture": 0
+        }
+      },
+      "visibility": true,
+      "export": true,
+      "autouv": 0
+    }
+  ],
+  "outliner": [
+    {
+      "name": "sword",
+      "uuid": "5d67e2e6-f015-4a03-b3ad-3b0204921e75",
+      "origin": [
+        0,
+        0,
+        0
+      ],
+      "children": [
+        "7a327ec1-8fed-43e0-9893-e04332833b68",
+        "05b2db9c-fd8d-4869-9380-72b6ac03b154",
+        "ebe88b25-82c5-414a-b048-94ed6f524ad6",
+        "9fa25d9c-2392-4901-b67e-45fabd12b6a9",
+        "5c2dc92e-1653-421b-a3aa-859b45dda91d",
+        "891eca87-8970-4998-8fc0-114898add452",
+        "17353a5b-f16a-49eb-8301-3580af62d773",
+        "c2ac3fc0-b6bc-401a-a69d-d8b34430b169",
+        "c633d8b0-4f59-4c73-99de-18b93ba1b952",
+        "6db4200a-7b54-4b40-987a-1d4211aa6ed5",
+        "09d4771a-7a0d-4293-862b-aa10b04173df",
+        "89342a52-a671-4288-8e8d-7e568a6216aa"
+      ]
+    }
+  ],
+  "textures": [
+    {
+      "name": "titan_iron_sword.png",
+      "id": "0",
+      "uuid": "300c2d14-99eb-46f8-aa04-cd2421ac7041",
+      "mode": "bitmap",
+      "source": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQAAAAEACAYAAABccqhmAAAE4ElEQVR4nO3dW2gcVRwH4Gwj++RbxRuUQrH4oHhDUao+iLEFfRCLqIGitrVULdXeTL3UpiK01rYEI2JsK1gsoiiKVFMU6gWhtF6flEJQRNFSHwQhkMfIjuy4u8lkZqfTdHfO90HCf8+ZM9nMZk7m/B5menoAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAgLBUat/uXb5qsre3t+et/SOVm/qWRPWXn4wm1knbL75mflQf/uaXylULzovq78ZOJdZJ2y+c91994tdTlQvnnhvVf/z1T2KdtH2n7Wfrrj1R3fg1Pj7ek9Q2uGFdpX/FyrbGHNy3t2nMgZFXp7yerffx9sej0465747bK5u3PTdt385tg3Hf9me3NNV593fo8yNNfX03LKoM7tje1PbkuvVx29aBzU111vE//PR91HbFpVdWXh4ZjupHV61JrJO2//3kWFRffP6CyoGD+6N6Wf/yxDpp+wfXb4zq13e/WLn1zrui+tP332uqz6lNANVqNfol1LNzHBpPlJnaihiT9nq23kdjf9a+rMev3b60trSfm9bWTXU0Abz52ivRlUDNZ6OHUuuk7Ws7bjwYafVHx8bisV+f+DOuf/z5//q3k3+n1knbd9p+tjy+Nq6zqv3HPt0xra/rn0HaSdz6x13UmKx9rfXS2/oSj8XzTz+V2Nf6s9LaWuslN948Zd/PbNw0pe2ySy6P21aveDi1Ttq+3fPogrnz47H999zf1n6iCaAoExMT8cHMUnN2DDyyuu1JZd/wS22PqX/WrZNF1r7WOq9brrt+ynt/Yu1jM7ZN1z9bijqPsowtdAJo9/KDcqt/1jMtD2bqa61DUS3oPMq8BChKbWZpnMXTasqt/llPtzzI0tdah2KioPMoy1hXAJwxRYeAoah26xVAUqiXVFNuRYeAoai2GQKezn4KnQCgE0PAbjPRrSEgNBICBrYEgEZCwMBCQGgkBOz8K4A5Od8jZPpDrv23qa85619Z+1rrUFQTfv92j0uWsa4AOGOEgPkIASkFIWA+QkBKQQiYjxCQUhAC5iMEpBSEgPkIASkFIWA+QkBKQQiYjxCQUhAC5iMEpBSEgPkIASkFIWA+QkBKQQiYjxCQUhAC5iMEpBSEgPkIASkFIWA+8y5aGN8274FlD6XWSd4Y2hNvc+TDD6atgdDVnhW2eOndk7W69jyxlZsGJlvbvzh+dPKrb49H9QtDuyd3DQ/NWCdtD3SOWX82INCBE0D9NsF7d+6I1weH330n9/PKFl19bTx2w5qz95glINmcIm8xHOItnKFUS4AkLvWhpBNAUbcYDvE5btDNXAFA6BlAUbcYDvEWztDNhIAQMEsACJgQEALmCgACJgSEgAkBIWCWABAwISAEzBUABEwICAETAkLALAEgYEJACJgrAAiYEBACJgSEgFkCQMCEgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD0dJp/AXNEnEwa1cZ7AAAAAElFTkSuQmCC",
+      "width": 256,
+      "height": 256,
+      "uv_width": 256,
+      "uv_height": 256
+    }
+  ]
+}
