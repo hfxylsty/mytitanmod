@@ -1,0 +1,116 @@
+{
+  "format_version": "1.12.0",
+  "minecraft:geometry": [
+    {
+      "description": {
+        "identifier": "geometry.rotten_colossus",
+        "texture_width": 128,
+        "texture_height": 128,
+        "visible_bounds_width": 8,
+        "visible_bounds_height": 14,
+        "visible_bounds_offset": [0, 6, 0]
+      },
+      "bones": [
+        {
+          "name": "body",
+          "pivot": [0, 60, 0],
+          "cubes": [
+{
+  "origin": [-40, 0, -20],
+  "size": [80, 80, 40],
+  "uv": [0, 0]
+}
+          ]
+        },
+        {
+          "name": "head",
+          "pivot": [0, 88, 0],
+          "cubes": [
+{
+  "origin": [-20, 0, -16],
+  "size": [40, 40, 32],
+  "uv": [0, 0]
+}
+          ]
+        },
+        {
+          "name": "bone_plate_0",
+          "pivot": [-30, 62, 22],
+          "cubes": [
+{
+  "origin": [-8, -8, -6],
+  "size": [16, 16, 12],
+  "uv": [0, 0]
+}
+          ]
+        },
+        {
+          "name": "bone_plate_1",
+          "pivot": [-10, 62, 22],
+          "cubes": [
+{
+  "origin": [-8, -8, -6],
+  "size": [16, 16, 12],
+  "uv": [0, 0]
+}
+          ]
+        },
+        {
+          "name": "bone_plate_2",
+          "pivot": [10, 62, 22],
+          "cubes": [
+{
+  "origin": [-8, -8, -6],
+  "size": [16, 16, 12],
+  "uv": [0, 0]
+}
+          ]
+        },
+        {
+          "name": "right_arm",
+          "pivot": [-44, 80, 0],
+          "cubes": [
+{
+  "origin": [-16, -60, -12],
+  "size": [32, 80, 24],
+  "uv": [0, 0]
+}
+          ]
+        },
+        {
+          "name": "left_arm",
+          "pivot": [44, 80, 0],
+          "cubes": [
+{
+  "origin": [-16, -60, -12],
+  "size": [32, 80, 24],
+  "uv": [0, 0]
+}
+          ]
+        },
+        {
+          "name": "right_leg",
+          "pivot": [-18, 60, 0],
+          "cubes": [
+{
+  "origin": [-14, -60, -14],
+  "size": [28, 60, 28],
+  "uv": [0, 0]
+}
+          ]
+        },
+        {
+          "name": "left_leg",
+          "pivot": [18, 60, 0],
+          "cubes": [
+{
+  "origin": [-14, -60, -14],
+  "size": [28, 60, 28],
+  "uv": [0, 0]
+}
+          ]
+        }
+      ]
+    }
+  ]
+}

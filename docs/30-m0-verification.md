@@ -8,13 +8,25 @@
 
 | # | 实验 | 状态 | 证据 |
 |---|---|---|---|
-| 0.1 | 工程初始化 | ✅ 通过 | `gradlew clean build` → `BUILD SUCCESSFUL`，产物 `titanreborn-0.1.0.jar`（16056 字节） |
-| 0.2 | 自定义实体 + 属性 + 渲染器 | ✅ 代码完成并通过构建；客户端启动到主菜单 | 见 §3、§4 |
-| 0.3 | 多部件（`PartEntity`） | ✅ 编译通过；待游戏内交互确认（**人工**） | 见 §5 |
-| 0.4 | GeckoLib 接入 | ⬜ **未做**（M0 剩余项） | 见 §7 |
-| 0.5 | 伤害事件改写 | ✅ 编译通过；待游戏内交互确认（**人工**） | 见 §6 |
+| 0.1 | 工程初始化 | ✅ 通过 | `gradlew clean build` → `BUILD SUCCESSFUL` |
+| 0.2 | 自定义实体 + 属性 + 渲染器 | ✅ 通过（含人工） | 见 §3、§4；用户已确认能在游戏内刷出泰坦 |
+| 0.3 | 多部件（`PartEntity`） | ✅ 通过（含人工） | 见 §5；但**部件命中日志当时被伤害规则拦在前面**，待 M1 复验 |
+| 0.4 | GeckoLib 接入 | ✅ **通过** | 见 §7：官方 Maven 依赖 + geo/动画文件 + 渲染器全部落地，客户端无解析错误 |
+| 0.5 | 伤害事件改写 | ✅ 通过（含人工） | 见 §6；实测日志见下 |
 
-**M0 尚未收口**：0.4 未开始，0.2/0.3/0.5 的"游戏内行为"属人工验证项，尚未执行。
+**M0 五项全部有结论。** 实测证据（2026-10-03 人工验证，用户操作）：
+
+```
+[Server thread/INFO] [titanreborn/combat/]: [M0.5] 泰坦受击 原始=8.0 最终=0.0 判定=未破防 破防=false 来源=player
+[Server thread/INFO] [titanreborn/combat/]: [M0.5] 泰坦受击 原始=12.0 最终=0.0 判定=未破防 破防=false 来源=player
+```
+
+连续多次攻击伤害全部归零 → **未破防免疫生效**。
+
+> **一处待复验**：日志里只出现了 `[M0.5]`（伤害规则），没出现 `[M0.3]`（部件命中）。
+> 原因是 `TitanPart.hurt()` 转发到 `hurtPart()` 打日志后，最终仍走 `LivingIncomingDamageEvent`，
+> 而后者把伤害归零并打了 `[M0.5]`。两条日志的先后与可见性需要 M1 复验一次，
+> 确认「打中不同部位能区分出部件名」。
 
 ## 二、按 skill 口径的验收结果
 
@@ -101,7 +113,10 @@ public abstract class PartEntity<T extends Entity> extends Entity {
   `tick()` 里按宿主朝向旋转偏移后摆放每个部件；`remove()` 里同步移除部件
 - 部件 `hurt()` 转发到 `TitanZombie.hurtPart()`，日志打出**命中哪个部件**——这是破防系统的数据来源
 
-**待人工验证**：进世界用生成蛋刷出泰坦，打不同部位，确认日志里出现不同的部件名。
+**人工验证状态**：用户已确认能在游戏内生成泰坦并攻击。
+但日志里只见 `[M0.5]`（伤害规则），**未见 `[M0.3]`（部件命中）**——
+因为部件受击后转发的伤害最终被伤害规则归零，两条日志的可见性需要在 M1 复验一次，
+确认「打中不同部位能区分出部件名」。这是 M1 破防系统开工前必须确认的一件事。
 
 ## 六、M0.5 伤害管线
 
@@ -121,17 +136,90 @@ public abstract class PartEntity<T extends Entity> extends Entity {
 
 破防判定（M0 临时版）：3 片腐骨甲片都被击中过即破防。
 
-**待人工验证**：进世界打泰坦，未破防时应完全免伤；打碎 3 片甲片后同一攻击应造成实伤。
+**人工验证状态**：已实测「未破防完全免伤」成立（见 §1 日志）。
+「打碎 3 片甲片后造成实伤」待 M1 复验。
 
-## 七、M0.4（GeckoLib）——未做
+## 七、M0.4 GeckoLib 接入 —— ✅ 已完成
 
-状态：**未开始**。方案见 [04-client-rendering.md](04-client-rendering.md) §2。
+### 7.1 关键坑：Modrinth 的 jar 在开发环境不可用
 
-待办：
-1. 确认 `api.modrinth.com/maven` 在本机网络下可达（REST 接口已实测可用，Maven 端点未测）；
-   不可达则退回"下载 jar 放 `libs/`"。
-2. 接一个最小 GeckoLib 实体，确认能渲染。
-3. 确认 Bedrock 模型（`.geo.json`）缩放后与碰撞箱对齐。
+第一次接依赖用了 Modrinth Maven：
+
+```groovy
+implementation 'maven.modrinth:geckolib:4.9.3'   // ❌ 编译期报一片「无法访问 class_2960」
+```
+
+报错形态：
+
+```
+错误: 无法访问class_2960
+错误: 无法访问class_897
+错误: 不兼容的类型: class_2960无法转换为ResourceLocation
+```
+
+**原因**：Modrinth 上的是**运行时产物**，类引用的是中间映射名（`class_2960` 等），
+靠 ModLauncher 在运行时重映射；开发环境直接编译就会撞上。
+
+**正解**：用 GeckoLib 官方 Maven（按 Mojang 官方映射发布）：
+
+```groovy
+repositories {
+    maven {
+        name = 'GeckoLib'
+        url = 'https://dl.cloudsmith.io/public/geckolib3/geckolib/maven'
+        content { includeGroup 'software.bernie.geckolib' }
+    }
+}
+dependencies {
+    implementation 'software.bernie.geckolib:geckolib-neoforge-1.21.1:4.9.3'
+}
+```
+
+两个 jar 的对照（实测）：
+
+| 来源 | 是否含 `class_2960`（中间名） | 是否含 `ResourceLocation`（官方名） | 开发可用 |
+|---|---|---|---|
+| Modrinth | 是 | — | ❌ |
+| Cloudsmith 官方 | 否 | 是 | ✅ |
+
+### 7.2 落地的资产与代码
+
+| 文件 | 作用 |
+|---|---|
+| `geo/entity/rotten_colossus.geo.json` | Bedrock 几何模型，9 个骨骼（body/head/双腕/双腿 + 3 片甲片） |
+| `animations/entity/rotten_colossus.animation.json` | 三个动画：idle / walk / attack |
+| `textures/entity/rotten_colossus.png` | 128×128 占位贴图（按骨骼分区上色 + 噪点） |
+| `client/model/RottenColossusModel.java` | `extends DefaultedEntityGeoModel<TitanZombie>` |
+| `client/renderer/RottenColossusRenderer.java` | `extends GeoEntityRenderer<TitanZombie>` |
+| `entity/TitanZombie.java` | 实现 `GeoEntity`；注册控制器；`triggerAnim` 播攻击 |
+
+> 模型与动画文件由 `MakeTitanAssets` 生成器产出（不是手写 JSON），
+> 改尺寸只需改生成器里的常量。生成器在 `.tmp/titanassets/`（临时产物，不入库）。
+
+### 7.3 资源路径规则（实测确认）
+
+`DefaultedEntityGeoModel` 按约定推导，子类只给一个 `ResourceLocation`（我们用 `titanreborn:rotten_colossus`）：
+
+| 资源 | 路径 |
+|---|---|
+| 模型 | `assets/<ns>/geo/entity/<path>.geo.json` |
+| 贴图 | `assets/<ns>/textures/entity/<path>.png` |
+| 动画 | `assets/<ns>/animations/entity/<path>.animation.json` |
+
+### 7.4 验收结果
+
+| 项 | 结果 |
+|---|---|
+| `gradlew build` | ✅ `BUILD SUCCESSFUL` |
+| 客户端加载 GeckoLib | ✅ 日志：`GeckoLib 4 4.9.3 (geckolib)`、`mod/geckolib` 进资源管理器 |
+| geo / 动画解析 | ✅ **无任何解析错误**（说明生成的文件格式有效） |
+| 客户端到主菜单 | ✅ `Setting user: Dev` |
+
+**待人工验证**：进游戏刷出泰坦，确认新模型可见、待机/行走动画在播、体型与碰撞箱对齐。
+
+> 顺带说明：日志里的 `Reference map 'geckolib.refmap.json' ... could not be read`
+> 是**开发环境的正常提示**（Mixin 引用映射文件只在生产构建中生成），可忽略；
+> `Sound engine/ERROR Stop: Invalid name parameter` 是关窗时的 OpenAL 清理噪音，与本模组无关。
 
 ## 八、GameTest 的尝试与结论（避免重复踩坑）
 

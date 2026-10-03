@@ -6,6 +6,18 @@ plugins {
 group = 'com.titanreborn'
 version = '0.1.0'
 
+repositories {
+    // GeckoLib 的官方 Maven。**开发环境必须用这个，不能用 Modrinth 的 jar**：
+    // Modrinth 上的是运行时产物，类引用的是中间映射名（class_2960 之类），
+    // 在开发环境里编译会报「无法访问 class_2960」。
+    // 官方 Maven 的构件按 Mojang 官方映射发布（ResourceLocation 等），可直接编译。
+    maven {
+        name = 'GeckoLib'
+        url = 'https://dl.cloudsmith.io/public/geckolib3/geckolib/maven'
+        content { includeGroup 'software.bernie.geckolib' }
+    }
+}
+
 neoForge {
     version = '21.1.252'
     runs {
@@ -17,6 +29,11 @@ neoForge {
             sourceSet sourceSets.main
         }
     }
+}
+
+dependencies {
+    // GeckoLib：Bedrock 几何模型 + 关键帧动画库（MIT 许可证，支持 1.21.1）
+    implementation 'software.bernie.geckolib:geckolib-neoforge-1.21.1:4.9.3'
 }
 
 java {

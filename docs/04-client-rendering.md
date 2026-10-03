@@ -29,22 +29,70 @@
 
 > 依据：`https://api.modrinth.com/v2/search?query=geckolib&facets=[["versions:1.21.1"],["categories:neoforge"]]`（2026-10-03 实测）
 
-### 2.2 依赖怎么加
+### 2.2 依赖怎么加（M0.4 已实测）
 
-在 `build.gradle` 的 repositories 加 Modrinth Maven，dependencies 加 GeckoLib：
+> ⚠️ **关键坑（已踩，务必避开）**：**不要用 Modrinth 的 GeckoLib jar**。
+> Modrinth 上的是**运行时产物**，类引用的是中间映射名（`class_2960`、`class_897`…），
+> 在开发环境编译会报一片「无法访问 `class_2960`」。
+> 开发必须用 GeckoLib **官方 Maven**（按 Mojang 官方映射发布）。
 
 ```groovy
 repositories {
-    maven { url = 'https://api.modrinth.com/maven' }   // 需实测该 maven 是否可访问
+    maven {
+        name = 'GeckoLib'
+        url = 'https://dl.cloudsmith.io/public/geckolib3/geckolib/maven'
+        content { includeGroup 'software.bernie.geckolib' }
+    }
 }
 
 dependencies {
-    implementation "maven.modrinth:geckolib:<版本号>"
+    // 构件名带 MC 版本后缀；1.21.1 对应 geckolib-neoforge-1.21.1
+    implementation 'software.bernie.geckolib:geckolib-neoforge-1.21.1:4.9.3'
 }
 ```
 
-**待验证**：`api.modrinth.com/maven` 在本机网络下是否可达（本机 `api.modrinth.com` 的 REST 接口可访问，但 Maven 端点未测）。
-若不可达，退路是：从 Modrinth 下载 jar → 放 `libs/` → `implementation files('libs/geckolib-xxx.jar')`。
+**实测结果（2026-10-03）**：
+
+| 项 | 结果 |
+|---|---|
+| Cloudsmith 可达性 | ✅ 200（`maven-metadata.xml` 与 `4.9.3` 的 pom/jar 均 200） |
+| 官方 jar 的映射 | ✅ 官方名（含 `ResourceLocation`，不含 `class_2960`） |
+| Modrinth jar 的映射 | ❌ 中间名（含 `class_2960`）→ 开发环境不可用 |
+| `gradlew build` | ✅ `BUILD SUCCESSFUL` |
+| `runClient` | ✅ 日志出现 `GeckoLib 4 4.9.3 (geckolib)`、`mod/geckolib` 进入资源管理器，**无 geo/动画解析错误** |
+
+> 运行时仍需玩家自行安装 GeckoLib 4.9.3（或用 Modrinth 那个 jar），
+> 因为它是独立前置模组；上面的依赖只解决**开发期编译**。
+
+### 2.3 资源路径规则（已实测确认）
+
+GeckoLib 的 `DefaultedGeoModel` / `DefaultedEntityGeoModel` 按固定约定推导路径，
+**子类只需给出一个 {@code ResourceLocation}**（我们用 `titanreborn:rotten_colossus`）：
+
+| 资源 | 推导出的路径 |
+|---|---|
+| 模型 | `assets/<ns>/geo/entity/<path>.geo.json` |
+| 贴图 | `assets/<ns>/textures/entity/<path>.png` |
+| 动画 | `assets/<ns>/animations/entity/<path>.animation.json` |
+
+（依据：反编译 GeckoLib 4.9.3 的 `DefaultedGeoModel` 常量池，见
+`geo/`、`.geo.json`、`animations/`、`.animation.json`、`textures/`、`.png`，以及
+`DefaultedEntityGeoModel` 的 `entity` 片段。）
+
+### 2.4 实际的类与 API（已用 javap 核验）
+
+| 用途 | 类 / 方法 |
+|---|---|
+| 实体获得动画能力 | `implements GeoEntity`（接口，提供 `getAnimData`/`triggerAnim` 等默认方法） |
+| 实例缓存 | `GeckoLibUtil.createInstanceCache(this)` → `AnimatableInstanceCache` |
+| 注册控制器 | `registerControllers(AnimatableManager.ControllerRegistrar)` |
+| 控制器 | `new AnimationController<>(this, "<名字>", <过渡tick>, state -> ...)` |
+| 可触发动画 | `controller.triggerableAnim("<key>", RawAnimation)` + `triggerAnim(控制器名, key)` |
+| 动画构建 | `RawAnimation.begin().thenLoop("<动画名>")` / `.thenPlay(...)` |
+| 状态判定 | `AnimationState#isMoving()`、`#setAndContinue(RawAnimation)` |
+| 模型基类 | `extends DefaultedEntityGeoModel<T>(ResourceLocation, boolean)` |
+| 渲染器基类 | `extends GeoEntityRenderer<T>(EntityRendererProvider.Context, GeoModel<T>)` |
+
 
 ### 2.3 渲染器与实体类
 

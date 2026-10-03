@@ -13,29 +13,57 @@ import net.neoforged.neoforge.entity.PartEntity;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import software.bernie.geckolib.animatable.GeoEntity;
+import software.bernie.geckolib.animatable.instance.AnimatableInstanceCache;
+import software.bernie.geckolib.animation.AnimatableManager;
+import software.bernie.geckolib.animation.AnimationController;
+import software.bernie.geckolib.animation.RawAnimation;
+import software.bernie.geckolib.util.GeckoLibUtil;
 
 /**
- * 僵尸泰坦 —— M0/M1 的验证实体。
+ * 腐骸泰坦（Rotten Colossus）—— M0/M1 的验证实体。
  *
  * <p>M0 验证三件事：
  * <ol>
- *   <li>M0.2 实体能注册、能生成、能渲染（碰撞箱 4.0 × 12.0，模型缩放 6×）；</li>
+ *   <li>M0.2 实体能注册、能生成、能渲染；</li>
  *   <li>M0.3 多部件能被击中并把伤害转发给宿主；</li>
  *   <li>M0.5 伤害事件能改写最终伤害。</li>
  * </ol>
+ *
+ * <p>M0.4 起改用 GeckoLib 渲染（Bedrock 几何模型 + 关键帧动画）：
+ * 实现 {@link GeoEntity} 让实体携带动画能力，模型见
+ * {@code client/model/RottenColossusModel}。
  *
  * <p>多部件实现依据 NeoForge 的 {@code IEntityExtension}：
  * 覆写 {@code isMultipartEntity()} 与 {@code getParts()}，部件继承
  * {@link net.neoforged.neoforge.entity.PartEntity}。
  * <b>宿主负责每 tick 摆放部件</b>（部件不存档、不独立同步）。
+ *
+ * <p><b>部件名与模型骨骼名必须一致</b>：破防逻辑按名字定位甲片，
+ * 而视觉位置由 GeckoLib 的骨骼决定（见 {@code geo/entity/rotten_colossus.geo.json}）。
  */
-public class TitanZombie extends Monster {
+public class TitanZombie extends Monster implements GeoEntity {
 
     private static final Logger LOGGER = LoggerFactory.getLogger("titanreborn/part");
 
     /** 部件偏移：x=横向(右为正)，y=高度，z=前后(前为正)，单位=方块。 */
     private static final double PLATE_HEIGHT = 7.0D;
     private static final double PLATE_FORWARD = 0.7D;
+
+    // ---- GeckoLib 动画（M0.4）----
+
+    /** 控制器名，供 triggerAnim 使用。 */
+    private static final String MAIN_CONTROLLER = "main";
+
+    /** 动画名，必须与 animations/entity/rotten_colossus.animation.json 里的键一致。 */
+    private static final RawAnimation IDLE =
+            RawAnimation.begin().thenLoop("animation.rotten_colossus.idle");
+    private static final RawAnimation WALK =
+            RawAnimation.begin().thenLoop("animation.rotten_colossus.walk");
+    private static final RawAnimation ATTACK =
+            RawAnimation.begin().thenPlay("animation.rotten_colossus.attack");
+
+    private final AnimatableInstanceCache animationCache = GeckoLibUtil.createInstanceCache(this);
 
     private final TitanPart[] parts;
     private final TitanPart head;
@@ -67,6 +95,33 @@ public class TitanZombie extends Monster {
                 .add(Attributes.ARMOR, 22.0D)
                 .add(Attributes.KNOCKBACK_RESISTANCE, 1.0D)
                 .add(Attributes.FOLLOW_RANGE, 64.0D);
+    }
+
+    // ==================== GeckoLib 动画（M0.4） ====================
+
+    @Override
+    public void registerControllers(AnimatableManager.ControllerRegistrar controllers) {
+        AnimationController<TitanZombie> main =
+                new AnimationController<>(this, MAIN_CONTROLLER, 5, state -> {
+                    // 攻击动画用 triggerAnim 触发，这里只负责待机/行走的循环
+                    if (state.isMoving()) {
+                        return state.setAndContinue(WALK);
+                    }
+                    return state.setAndContinue(IDLE);
+                });
+        // 可触发动画必须在控制器里登记，否则 triggerAnim 找不到
+        main.triggerableAnim("attack", ATTACK);
+        controllers.add(main);
+    }
+
+    @Override
+    public AnimatableInstanceCache getAnimatableInstanceCache() {
+        return animationCache;
+    }
+
+    /** 播放一次攻击动画（由战斗逻辑调用）。 */
+    public void playAttackAnimation() {
+        this.triggerAnim(MAIN_CONTROLLER, "attack");
     }
 
     // ==================== 多部件（M0.3） ====================
