@@ -18,6 +18,7 @@
 | 09 | [09-glossary.md](09-glossary.md) | 术语表（中英对照） | ✅ |
 | 10 | [10-content-roster.md](10-content-roster.md) | 内容清单（泰坦/召唤物/物品） | ✅ |
 | 20 | [20-environment.md](20-environment.md) | 开发环境、工具链、已知坑 | ✅ |
+| 30 | [30-m0-verification.md](30-m0-verification.md) | M0 技术验证的实测记录与结论 | ✅ |
 | 90 | [90-references.md](90-references.md) | 外部资料与信息来源 | ✅ |
 | — | [PORT-PLAN.md](PORT-PLAN.md) | 历史存档：最初（迁移路线）的方案分析 | 🗄️ 存档 |
 

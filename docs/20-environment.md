@@ -241,6 +241,27 @@ BUILD SUCCESSFUL
 
 **判定模组真的被加载**：日志里出现 `mod/titanmod`（资源管理器列表）与我们的 mod 显示名。
 
+#### ⚠️ 这条修复与 JDK 路径绑定（2026-10-03 实测踩到）
+
+显卡首选项是按**可执行文件完整路径**登记的。本机有两份 JDK，**各自都要设**：
+
+```powershell
+$key = 'HKCU:\Software\Microsoft\DirectX\UserGpuPreferences'
+# 工作区内那份
+New-ItemProperty -Path $key -Name 'E:\titanmod\.tools\jdk-21.0.12.1+1\bin\java.exe'  -Value 'GpuPreference=2;' -PropertyType String -Force
+New-ItemProperty -Path $key -Name 'E:\titanmod\.tools\jdk-21.0.12.1+1\bin\javaw.exe' -Value 'GpuPreference=2;' -PropertyType String -Force
+# 工作区外那份（跑 titanreborn 工程时用的是它）
+New-ItemProperty -Path $key -Name 'C:\dsh-tools\jdk-21.0.12.1+1\bin\java.exe'  -Value 'GpuPreference=2;' -PropertyType String -Force
+New-ItemProperty -Path $key -Name 'C:\dsh-tools\jdk-21.0.12.1+1\bin\javaw.exe' -Value 'GpuPreference=2;' -PropertyType String -Force
+```
+
+**真实案例**：`titanreborn` 工程首次 `runClient` 时用的是 `C:\dsh-tools\...` 那份 JDK，
+当时该路径**没有**登记首选项，于是又崩在 `atio6axx.dll` 的 `EXCEPTION_ACCESS_VIOLATION`；
+补齐后立刻正常。
+
+> **规矩**：换 JDK 路径、或新增一份 JDK，**必须重设显卡首选项**，否则 `runClient` 必崩。
+> 症状与[5.2](#52-根因amd-集显驱动)完全一致，不要再去查模组代码。
+
 ### 5.4 复现 / 回滚方式
 
 - **复现**：把两条注册表键删掉 → `gradlew runClient` 复现 `EXCEPTION_ACCESS_VIOLATION`；或按 PATH 换成工作区外那份 JDK 而不补注册表键（首选项按**完整路径**匹配，换路径即失效）。

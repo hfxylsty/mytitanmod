@@ -1,0 +1,14 @@
+modLoader="javafml"
+loaderVersion="[4,)"
+license="All Rights Reserved"
+issueTrackerURL="https://example.invalid/titanreborn/issues"
+
+[[mods]]
+modId="titanreborn"
+version="0.1.0"
+displayName="Titan Reborn"
+authors="titanreborn"
+description='''
+Titan Reborn - 巨型泰坦 BOSS 生存战。
+原创实现，借鉴《泰坦生物》(The Titans) 的玩法与系统结构，不使用其任何代码与素材。
+'''
