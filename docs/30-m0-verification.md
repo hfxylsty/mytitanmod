@@ -196,6 +196,34 @@ dependencies {
 > 模型与动画文件由 `MakeTitanAssets` 生成器产出（不是手写 JSON），
 > 改尺寸只需改生成器里的常量。生成器在 `.tmp/titanassets/`（临时产物，不入库）。
 
+### 7.2.1 ⚠️ 第一版模型是错的（已修，教训记录）
+
+第一版生成器产出的 geo 文件有**三处硬错误**，导致游戏内模型完全不正确：
+
+| 错误 | 后果 |
+|---|---|
+| `cubes.origin` 用了「相对 pivot 的偏移」，而 Bedrock 规范要求**模型空间绝对坐标** | 所有部件叠在一起并沉到地面以下 |
+| 所有 cube 的 `uv` 都是 `[0,0]` | 9 个部件共用贴图同一区域，外观全一样 |
+| 骨骼没有 `parent`，全是平级 | 挥臂动画不会带动手臂（没有可动层级） |
+
+修正后（已 `ConvertFrom-Json` 校验）：
+
+| 骨骼 | parent | Y 范围（像素） | uv |
+|---|---|---|---|
+| `body` | 根 | 65 ~ 130 | 0,44 |
+| `head` | body | 136 ~ 176 | 0,0 |
+| `bone_plate_0/1/2` | body | 72 ~ 92 | 44/60/76, 44 |
+| `right_arm` / `left_arm` | body | 60 ~ 130 | 0,112 |
+| `right_leg` / `left_leg` | 根 | 0 ~ 65 | 92,112 |
+
+总高 176 像素 ≈ 11 格，与碰撞箱 `4.0 × 12.0` 基本对齐。
+
+> **更深一层的教训**：这个模型是"看不见结果的情况下手搓"的，所以第一版错得很彻底。
+> **正规做法是用 Blockbench 做模型与动画**（可视化编辑 + 导出 Bedrock 格式），
+> 代码侧只负责实体类/渲染器/模型类三件事。
+> 当前生成的模型只是**占位**，正式模型规格见
+> [31-art-spec-rotten-colossus.md](31-art-spec-rotten-colossus.md)。
+
 ### 7.3 资源路径规则（实测确认）
 
 `DefaultedEntityGeoModel` 按约定推导，子类只给一个 `ResourceLocation`（我们用 `titanreborn:rotten_colossus`）：
