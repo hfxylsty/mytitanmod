@@ -66,7 +66,7 @@ src/main/resources/
 
 ## 四、战利品表与标签
 
-- 掉落：`data/titanreborn/loot_table/entities/rotten_colossus.json`，由实体在 `getLootTable()` 里引用；
+- 掉落：`data/titanreborn/loot_table/entities/titan_zombie.json`，由实体在 `getLootTable()` 里引用；
 - 标签：用于把我们的物品归入原版类别（如让锤子能被当镐用、让泰坦可被某类伤害影响）。
 
 **泰坦的掉落表要有"保底"设计**：BOSS 级实体建议用 `rolls` + 权重，避免刷不出关键材料。
@@ -94,7 +94,7 @@ src/main/resources/
 ```json
 {
   "item.titanreborn.bone_breaker": "Bone Breaker",
-  "entity.titanreborn.rotten_colossus": "Rotten Colossus",
+  "entity.titanreborn.titan_zombie": "Zombie Titan",
   "itemGroup.titanreborn.main": "Titan Reborn"
 }
 ```
@@ -138,9 +138,9 @@ src/main/resources/
 
 ```json
 {
-  "entity.titan_reborn.rotten_colossus.idle": {
+  "entity.titan_reborn.titan_zombie.idle": {
     "category": "hostile",
-    "sounds": ["titanreborn:entity/rotten_colossus/idle1", "titanreborn:entity/rotten_colossus/idle2"]
+    "sounds": ["titanreborn:entity/titan_zombie/idle1", "titanreborn:entity/titan_zombie/idle2"]
   }
 }
 ```
@@ -151,7 +151,7 @@ src/main/resources/
 
 | 类别 | M1 需要 | 说明 |
 |---|---|---|
-| 实体贴图 | 1 张（+ 可能 1 张部件贴图） | 腐骸泰坦 |
+| 实体贴图 | 1 张（+ 可能 1 张部件贴图） | 僵尸泰坦 |
 | 物品贴图 | 3~5 张 | 召唤道具、材料、1 件武器 |
 | 方块贴图 | 1~2 张 | 矿石/祭坛 |
 | 模型 | 1 个 `.geo.json` + 1 个 `.animation.json` | |

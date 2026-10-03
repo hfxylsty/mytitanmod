@@ -35,7 +35,7 @@
 
 ### 3.1 范围（只做这些，其余一律不做）
 
-**选定的泰坦**：**腐骸泰坦 / Rotten Colossus**（原型僵尸，8× 体型）——理由见 [10-content-roster.md](10-content-roster.md)：原型 AI 最简单，但能一次验证整条链路。
+**选定的泰坦**：**僵尸泰坦 / Zombie Titan**（原型僵尸，8× 体型）——理由见 [10-content-roster.md](10-content-roster.md)：原型 AI 最简单，但能一次验证整条链路。
 
 | 模块 | M1 做什么 |
 |---|---|
@@ -59,7 +59,7 @@
 | A1 | 构建通过 | `gradlew build` 输出 `BUILD SUCCESSFUL`，产物 jar 存在 | 自动 |
 | A2 | 客户端启动 | `gradlew runClient` 进主菜单，日志无致命错误，日志出现 `mod/titanreborn` | 自动 |
 | A3 | 模组加载 | 日志出现 mod 名与版本行 | 自动 |
-| A4 | 实体可生成 | `/summon titanreborn:rotten_colossus` 成功，实体可见、会动、有碰撞箱 | 自动+目视 |
+| A4 | 实体可生成 | `/summon titanreborn:titan_zombie` 成功，实体可见、会动、有碰撞箱 | 自动+目视 |
 | A5 | 多部件命中 | 攻击不同部位，日志/行为区分部位名 | 自动 |
 | A6 | 破防生效 | 未破防时攻击伤害≈0；击碎 3 片甲片后同一攻击造成实伤 | 自动 |
 | A7 | 重生长触发 | 血量降至阈值以下，可观测定时触发缩小→无敌→恢复 | 自动 |

@@ -186,11 +186,11 @@ dependencies {
 
 | 文件 | 作用 |
 |---|---|
-| `geo/entity/rotten_colossus.geo.json` | Bedrock 几何模型，9 个骨骼（body/head/双腕/双腿 + 3 片甲片） |
-| `animations/entity/rotten_colossus.animation.json` | 三个动画：idle / walk / attack |
-| `textures/entity/rotten_colossus.png` | 128×128 占位贴图（按骨骼分区上色 + 噪点） |
-| `client/model/RottenColossusModel.java` | `extends DefaultedEntityGeoModel<TitanZombie>` |
-| `client/renderer/RottenColossusRenderer.java` | `extends GeoEntityRenderer<TitanZombie>` |
+| `geo/entity/titan_zombie.geo.json` | Bedrock 几何模型，9 个骨骼（body/head/双腕/双腿 + 3 片甲片） |
+| `animations/entity/titan_zombie.animation.json` | 三个动画：idle / walk / attack |
+| `textures/entity/titan_zombie.png` | 128×128 占位贴图（按骨骼分区上色 + 噪点） |
+| `client/model/TitanZombieModel.java` | `extends DefaultedEntityGeoModel<TitanZombie>` |
+| `client/renderer/TitanZombieRenderer.java` | `extends GeoEntityRenderer<TitanZombie>` |
 | `entity/TitanZombie.java` | 实现 `GeoEntity`；注册控制器；`triggerAnim` 播攻击 |
 
 > 模型与动画文件由 `MakeTitanAssets` 生成器产出（不是手写 JSON），
@@ -222,11 +222,11 @@ dependencies {
 > **正规做法是用 Blockbench 做模型与动画**（可视化编辑 + 导出 Bedrock 格式），
 > 代码侧只负责实体类/渲染器/模型类三件事。
 > 当前生成的模型只是**占位**，正式模型规格见
-> [31-art-spec-rotten-colossus.md](31-art-spec-rotten-colossus.md)。
+> [31-art-spec-titan-zombie.md](31-art-spec-titan-zombie.md)。
 
 ### 7.3 资源路径规则（实测确认）
 
-`DefaultedEntityGeoModel` 按约定推导，子类只给一个 `ResourceLocation`（我们用 `titanreborn:rotten_colossus`）：
+`DefaultedEntityGeoModel` 按约定推导，子类只给一个 `ResourceLocation`（我们用 `titanreborn:titan_zombie`）：
 
 | 资源 | 路径 |
 |---|---|

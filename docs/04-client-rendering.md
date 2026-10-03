@@ -67,7 +67,7 @@ dependencies {
 ### 2.3 资源路径规则（已实测确认）
 
 GeckoLib 的 `DefaultedGeoModel` / `DefaultedEntityGeoModel` 按固定约定推导路径，
-**子类只需给出一个 {@code ResourceLocation}**（我们用 `titanreborn:rotten_colossus`）：
+**子类只需给出一个 {@code ResourceLocation}**（我们用 `titanreborn:titan_zombie`）：
 
 | 资源 | 推导出的路径 |
 |---|---|
@@ -185,7 +185,7 @@ AbstractTitan implements IEntityExtension（Entity 已实现，只需覆写）
 ├── private final TitanPart[] parts;          // 缓存，构造时建好
 ├── private final TitanPart head;
 ├── private final TitanPart chest;            // 破防要打的部位
-├── private final TitanPart[] bonePlates;     // M1「腐骸泰坦」的 3 片腐骨甲片
+├── private final TitanPart[] bonePlates;     // M1「僵尸泰坦」的 3 片腐骨甲片
 │
 ├── @Override public boolean isMultipartEntity() { return true; }
 ├── @Override public PartEntity<?>[] getParts()  { return parts; }   // 返回缓存数组

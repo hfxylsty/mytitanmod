@@ -21,7 +21,7 @@ import software.bernie.geckolib.animation.RawAnimation;
 import software.bernie.geckolib.util.GeckoLibUtil;
 
 /**
- * 腐骸泰坦（Rotten Colossus）—— M0/M1 的验证实体。
+ * 僵尸泰坦（Zombie Titan）—— M0/M1 的验证实体。
  *
  * <p>M0 验证三件事：
  * <ol>
@@ -32,7 +32,7 @@ import software.bernie.geckolib.util.GeckoLibUtil;
  *
  * <p>M0.4 起改用 GeckoLib 渲染（Bedrock 几何模型 + 关键帧动画）：
  * 实现 {@link GeoEntity} 让实体携带动画能力，模型见
- * {@code client/model/RottenColossusModel}。
+ * {@code client/model/TitanZombieModel}。
  *
  * <p>多部件实现依据 NeoForge 的 {@code IEntityExtension}：
  * 覆写 {@code isMultipartEntity()} 与 {@code getParts()}，部件继承
@@ -40,7 +40,7 @@ import software.bernie.geckolib.util.GeckoLibUtil;
  * <b>宿主负责每 tick 摆放部件</b>（部件不存档、不独立同步）。
  *
  * <p><b>部件名与模型骨骼名必须一致</b>：破防逻辑按名字定位甲片，
- * 而视觉位置由 GeckoLib 的骨骼决定（见 {@code geo/entity/rotten_colossus.geo.json}）。
+ * 而视觉位置由 GeckoLib 的骨骼决定（见 {@code geo/entity/titan_zombie.geo.json}）。
  */
 public class TitanZombie extends Monster implements GeoEntity {
 
@@ -55,13 +55,13 @@ public class TitanZombie extends Monster implements GeoEntity {
     /** 控制器名，供 triggerAnim 使用。 */
     private static final String MAIN_CONTROLLER = "main";
 
-    /** 动画名，必须与 animations/entity/rotten_colossus.animation.json 里的键一致。 */
+    /** 动画名，必须与 animations/entity/titan_zombie.animation.json 里的键一致。 */
     private static final RawAnimation IDLE =
-            RawAnimation.begin().thenLoop("animation.rotten_colossus.idle");
+            RawAnimation.begin().thenLoop("animation.titan_zombie.idle");
     private static final RawAnimation WALK =
-            RawAnimation.begin().thenLoop("animation.rotten_colossus.walk");
+            RawAnimation.begin().thenLoop("animation.titan_zombie.walk");
     private static final RawAnimation ATTACK =
-            RawAnimation.begin().thenPlay("animation.rotten_colossus.attack");
+            RawAnimation.begin().thenPlay("animation.titan_zombie.attack");
 
     private final AnimatableInstanceCache animationCache = GeckoLibUtil.createInstanceCache(this);
 
