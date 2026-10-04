@@ -21,6 +21,7 @@
 | 30 | [30-m0-verification.md](30-m0-verification.md) | M0 技术验证的实测记录与结论 | ✅ |
 | 31 | [31-art-spec-titan-zombie.md](31-art-spec-titan-zombie.md) | 僵尸泰坦美术制作规格（给 Blockbench） | ✅ |
 | 32 | [32-blockbench-setup.md](32-blockbench-setup.md) | Blockbench 安装记录与网页版用法 | ✅ |
+| 33 | [33-titan-zombie-actions.md](33-titan-zombie-actions.md) | 僵尸泰坦动作与行为规格（逆向自原模组行为） | ✅ |
 | 90 | [90-references.md](90-references.md) | 外部资料与信息来源 | ✅ |
 | — | [PORT-PLAN.md](PORT-PLAN.md) | 历史存档：最初（迁移路线）的方案分析 | 🗄️ 存档 |
 
