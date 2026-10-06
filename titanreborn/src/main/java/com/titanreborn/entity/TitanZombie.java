@@ -80,6 +80,28 @@ public class TitanZombie extends Monster implements GeoEntity {
             RawAnimation.begin().thenLoop("animation.titan_zombie.walk");
 
     /**
+     * 攻击动画（播放一次）。
+     *
+     * <p>定义为常量而不是每 tick 新建：状态机 lambda 每 tick 都会执行，
+     * 在里面 {@code new RawAnimation} 会持续产生垃圾对象。
+     */
+    private static final RawAnimation ATTACK_ONCE =
+            RawAnimation.begin().then(
+                    TitanAction.ATTACK.animationName(),
+                    software.bernie.geckolib.animation.Animation.LoopType.PLAY_ONCE);
+
+    /**
+     * 攻击动画时长（tick）。用于战斗驱动的攻击自动回落到自动逻辑。
+     *
+     * <p>依据交付模型的动作时长：attack = 1.2 秒 = 24 tick，留一点余量取 26。
+     * <b>注意</b>：这里写死时长是权宜之计；若以后换了攻击动画时长，必须同步改。
+     */
+    private static final int ATTACK_DURATION_TICKS = 26;
+
+    /** 战斗驱动的攻击剩余 tick；> 0 时到点自动回 {@link TitanAction#NORMAL}。 */
+    private int attackTicks;
+
+    /**
      * 动画状态机的当前状态。
      *
      * <p>{@link TitanAction#NORMAL} = 交回自动逻辑（移动则 walk、静止则 idle）；
@@ -139,12 +161,12 @@ public class TitanZombie extends Monster implements GeoEntity {
     @Override
     public void registerControllers(AnimatableManager.ControllerRegistrar controllers) {
         controllers.add(new AnimationController<>(this, MAIN_CONTROLLER, 3, state -> {
+            if (action == TitanAction.ATTACK) {
+                return state.setAndContinue(ATTACK_ONCE);
+            }
             if (action.isLockedAction()) {
-                return state.setAndContinue(RawAnimation.begin().then(
-                        action.animationName(),
-                        action == TitanAction.ATTACK
-                                ? software.bernie.geckolib.animation.Animation.LoopType.PLAY_ONCE
-                                : software.bernie.geckolib.animation.Animation.LoopType.LOOP));
+                // 待机 / 行走：循环保持（调试锁定时用）
+                return state.setAndContinue(action == TitanAction.IDLE ? IDLE : WALK);
             }
             // NORMAL：交回自动逻辑
             return state.setAndContinue(state.isMoving() ? WALK : IDLE);
@@ -167,26 +189,37 @@ public class TitanZombie extends Monster implements GeoEntity {
      * <p>只在状态真的变化时记录日志，避免刷屏。
      *
      * @param newAction 目标状态；{@link TitanAction#NORMAL} 表示交回自动逻辑
+     * @return 是否真的发生了状态变化
      */
-    public void setAction(TitanAction newAction) {
+    public boolean setAction(TitanAction newAction) {
         if (this.action == newAction) {
-            return;
+            return false;
         }
         TitanAction old = this.action;
         this.action = newAction;
         LOGGER.info("[动作状态机] {} -> {} （实体 {}）",
                 old.displayName(), newAction.displayName(), this.getId());
+        return true;
     }
 
     /** 循环到下一个调试动作（供调试物品使用）。 */
     public TitanAction cycleAction() {
+        // 调试切换时清掉攻击计时，避免上一次战斗攻击的余量把状态拉回去
+        this.attackTicks = 0;
         setAction(this.action.next());
         return this.action;
     }
 
-    /** 播放一次攻击动画（由战斗逻辑调用）。 */
+    /**
+     * 播放一次攻击动画（由战斗逻辑调用），**到点自动回落到自动逻辑**。
+     *
+     * <p>与调试杖的区别：调试杖用 {@link #cycleAction()}，动作会一直锁定住；
+     * 战斗驱动的攻击必须能自己结束，否则泰坦会一直举着剑。
+     */
     public void playAttackAnimation() {
-        setAction(TitanAction.ATTACK);
+        if (setAction(TitanAction.ATTACK)) {
+            this.attackTicks = ATTACK_DURATION_TICKS;
+        }
     }
 
     // ==================== 多部件（M0.3） ====================
@@ -209,6 +242,12 @@ public class TitanZombie extends Monster implements GeoEntity {
     @Override
     public void tick() {
         super.tick();
+
+        // 战斗驱动的攻击到点自动回落（否则泰坦会一直举着剑）
+        if (attackTicks > 0 && --attackTicks == 0 && action == TitanAction.ATTACK) {
+            setAction(TitanAction.NORMAL);
+        }
+
         // 宿主负责摆放部件：必须每 tick 做，否则部件会留在原地
         float yaw = this.getYRot();
         double yawRad = Math.toRadians(yaw);
