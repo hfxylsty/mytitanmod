@@ -70,16 +70,23 @@ public class TitanZombie extends Monster implements GeoEntity {
 
     // ---- GeckoLib 动画（M0.4）----
 
-    /** 控制器名，供 triggerAnim 使用。 */
+    /** 控制器名，供调试与日志使用。 */
     private static final String MAIN_CONTROLLER = "main";
 
-    /** 动画名，必须与 animations/entity/titan_zombie.animation.json 里的键一致。 */
+    /** 自动逻辑用的两个循环动画（对应 {@link TitanAction#IDLE} / {@link TitanAction#WALK}）。 */
     private static final RawAnimation IDLE =
             RawAnimation.begin().thenLoop("animation.titan_zombie.idle");
     private static final RawAnimation WALK =
             RawAnimation.begin().thenLoop("animation.titan_zombie.walk");
-    private static final RawAnimation ATTACK =
-            RawAnimation.begin().thenPlay("animation.titan_zombie.attack");
+
+    /**
+     * 动画状态机的当前状态。
+     *
+     * <p>{@link TitanAction#NORMAL} = 交回自动逻辑（移动则 walk、静止则 idle）；
+     * 其他值 = 手动锁定在该动作。调试物品与战斗逻辑都通过
+     * {@link #setAction(TitanAction)} 改变它。
+     */
+    private TitanAction action = TitanAction.NORMAL;
 
     private final AnimatableInstanceCache animationCache = GeckoLibUtil.createInstanceCache(this);
 
@@ -116,21 +123,32 @@ public class TitanZombie extends Monster implements GeoEntity {
                 .add(Attributes.FOLLOW_RANGE, 64.0D);
     }
 
-    // ==================== GeckoLib 动画（M0.4） ====================
+    // ==================== 动作状态机（M1） ====================
 
+    /**
+     * 状态机核心：按当前 {@link #action} 决定播哪个动画。
+     *
+     * <pre>
+     *   action 是具体动作（调试锁定）→ 播该动作
+     *   action == NORMAL            → 移动播 walk，静止播 idle
+     * </pre>
+     *
+     * <p>GeckoLib 每 tick 调用这个 lambda 取"本 tick 该播的动画"；
+     * 返回的动画与上一 tick 不同时会自动从头开始播（因此切换动作会重播）。
+     */
     @Override
     public void registerControllers(AnimatableManager.ControllerRegistrar controllers) {
-        AnimationController<TitanZombie> main =
-                new AnimationController<>(this, MAIN_CONTROLLER, 5, state -> {
-                    // 攻击动画用 triggerAnim 触发，这里只负责待机/行走的循环
-                    if (state.isMoving()) {
-                        return state.setAndContinue(WALK);
-                    }
-                    return state.setAndContinue(IDLE);
-                });
-        // 可触发动画必须在控制器里登记，否则 triggerAnim 找不到
-        main.triggerableAnim("attack", ATTACK);
-        controllers.add(main);
+        controllers.add(new AnimationController<>(this, MAIN_CONTROLLER, 3, state -> {
+            if (action.isLockedAction()) {
+                return state.setAndContinue(RawAnimation.begin().then(
+                        action.animationName(),
+                        action == TitanAction.ATTACK
+                                ? software.bernie.geckolib.animation.Animation.LoopType.PLAY_ONCE
+                                : software.bernie.geckolib.animation.Animation.LoopType.LOOP));
+            }
+            // NORMAL：交回自动逻辑
+            return state.setAndContinue(state.isMoving() ? WALK : IDLE);
+        }));
     }
 
     @Override
@@ -138,9 +156,37 @@ public class TitanZombie extends Monster implements GeoEntity {
         return animationCache;
     }
 
+    /** 当前动作状态。 */
+    public TitanAction getAction() {
+        return action;
+    }
+
+    /**
+     * 切换动作状态。
+     *
+     * <p>只在状态真的变化时记录日志，避免刷屏。
+     *
+     * @param newAction 目标状态；{@link TitanAction#NORMAL} 表示交回自动逻辑
+     */
+    public void setAction(TitanAction newAction) {
+        if (this.action == newAction) {
+            return;
+        }
+        TitanAction old = this.action;
+        this.action = newAction;
+        LOGGER.info("[动作状态机] {} -> {} （实体 {}）",
+                old.displayName(), newAction.displayName(), this.getId());
+    }
+
+    /** 循环到下一个调试动作（供调试物品使用）。 */
+    public TitanAction cycleAction() {
+        setAction(this.action.next());
+        return this.action;
+    }
+
     /** 播放一次攻击动画（由战斗逻辑调用）。 */
     public void playAttackAnimation() {
-        this.triggerAnim(MAIN_CONTROLLER, "attack");
+        setAction(TitanAction.ATTACK);
     }
 
     // ==================== 多部件（M0.3） ====================

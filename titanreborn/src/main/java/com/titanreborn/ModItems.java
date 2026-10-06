@@ -1,5 +1,6 @@
 package com.titanreborn;
 
+import com.titanreborn.item.DebugWandItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Rarity;
 import net.neoforged.neoforge.common.DeferredSpawnEggItem;
@@ -56,6 +57,20 @@ public final class ModItems {
     public static final DeferredItem<Item> MARROW_MAUL =
             ITEMS.registerSimpleItem("marrow_maul",
                     new Item.Properties().rarity(Rarity.EPIC).durability(2500));
+
+    // ==================== 开发调试工具 ====================
+
+    /**
+     * 泰坦调试杖：右键循环播放泰坦动作，用于验证动画状态机。
+     *
+     * <p><b>开发期工具</b>，正式发布前应移除，或改为只在创造模式可用。
+     * 见 {@link com.titanreborn.item.DebugWandItem}。
+     */
+    public static final DeferredItem<DebugWandItem> DEBUG_WAND =
+            ITEMS.register("debug_wand",
+                    () -> new DebugWandItem(new Item.Properties()
+                            .rarity(Rarity.EPIC)
+                            .stacksTo(1)));
 
     // ==================== 生成蛋 ====================
 

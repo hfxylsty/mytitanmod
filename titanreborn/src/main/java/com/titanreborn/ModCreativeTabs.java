@@ -41,6 +41,9 @@ public final class ModCreativeTabs {
                         output.accept(ModItems.MARROW_MAUL.get());
 
                         output.accept(ModItems.TITAN_ZOMBIE_SPAWN_EGG.get());
+
+                        // 开发调试工具（正式发布前移除）
+                        output.accept(ModItems.DEBUG_WAND.get());
                     })
                     .build());
 }
