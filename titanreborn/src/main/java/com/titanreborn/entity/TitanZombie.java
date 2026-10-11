@@ -17,6 +17,7 @@ import software.bernie.geckolib.animatable.GeoEntity;
 import software.bernie.geckolib.animatable.instance.AnimatableInstanceCache;
 import software.bernie.geckolib.animation.AnimatableManager;
 import software.bernie.geckolib.animation.AnimationController;
+import software.bernie.geckolib.animation.PlayState;
 import software.bernie.geckolib.animation.RawAnimation;
 import software.bernie.geckolib.util.GeckoLibUtil;
 
@@ -148,29 +149,38 @@ public class TitanZombie extends Monster implements GeoEntity {
     // ==================== 动作状态机（M1） ====================
 
     /**
-     * 状态机核心：按当前 {@link #action} 决定播哪个动画。
+     * 状态机核心。
+     *
+     * <p><b>为什么用 {@code setAnimation} 而不是 {@code setAndContinue}</b>：
+     * {@code setAndContinue} 会把动画走"过渡队列"（transition），过渡期间需要若干 tick
+     * 才真正生效；而 {@code setAnimation} 是**立即替换当前动画**。
+     * 我们的调试场景需要"按下就立刻看到那个动作"，所以用立即替换。
+     *
+     * <p>每 tick 都调用 {@code setAnimation} 是安全的：传入的 {@link RawAnimation}
+     * 是静态常量，GeckoLib 用值比较（{@code RawAnimation} 覆写了 equals/hashCode），
+     * 相同动画不会重播。
      *
      * <pre>
      *   action 是具体动作（调试锁定）→ 播该动作
      *   action == NORMAL            → 移动播 walk，静止播 idle
      * </pre>
-     *
-     * <p>GeckoLib 每 tick 调用这个 lambda 取"本 tick 该播的动画"；
-     * 返回的动画与上一 tick 不同时会自动从头开始播（因此切换动作会重播）。
      */
     @Override
     public void registerControllers(AnimatableManager.ControllerRegistrar controllers) {
-        controllers.add(new AnimationController<>(this, MAIN_CONTROLLER, 3, state -> {
+        AnimationController<TitanZombie> main = new AnimationController<>(this, MAIN_CONTROLLER, 0, state -> {
             if (action == TitanAction.ATTACK) {
-                return state.setAndContinue(ATTACK_ONCE);
+                state.setAnimation(ATTACK_ONCE);
+            } else if (action == TitanAction.IDLE) {
+                state.setAnimation(IDLE);
+            } else if (action == TitanAction.WALK) {
+                state.setAnimation(WALK);
+            } else {
+                // NORMAL：交回自动逻辑
+                state.setAnimation(state.isMoving() ? WALK : IDLE);
             }
-            if (action.isLockedAction()) {
-                // 待机 / 行走：循环保持（调试锁定时用）
-                return state.setAndContinue(action == TitanAction.IDLE ? IDLE : WALK);
-            }
-            // NORMAL：交回自动逻辑
-            return state.setAndContinue(state.isMoving() ? WALK : IDLE);
-        }));
+            return PlayState.CONTINUE;
+        });
+        controllers.add(main);
     }
 
     @Override
