@@ -47,27 +47,27 @@ public class TitanZombie extends Monster implements GeoEntity {
 
     private static final Logger LOGGER = LoggerFactory.getLogger("titanreborn/part");
 
-    // ---- 多部件偏移 ----
+    // ---- 多部件偏移（2026-10-12 按「原版僵尸 ×16」新模型重算）----
     // 单位：方块。x=横向(右为正)，y=高度(脚底为 0)，z=前后(**-Z 是正面**)。
-    // 数值直接取自交付模型 ge o的骨骼 pivot 与立方体范围（1 格 = 16 像素）：
-    //   head          pivot(0,384,0)         → (0, 24.0, 0)
-    //   bone_plate_0  pivot(-34,312,-37)     → (-2.125, 19.5, -2.3125)
-    //   bone_plate_1  pivot(-2,298,-37)      → (-0.125, 18.625, -2.3125)
-    //   bone_plate_2  pivot(30,312,-37)      → (1.875, 19.5, -2.3125)
-    // 注意：模型正面朝 -Z，所以甲片的 z 是负值。
+    //
+    // ⚠️ 关键：PartEntity.moveToOwner 走的是 Entity.setPos，而 setPos 给的是
+    // **包围盒底面中心**（包围盒在 y 方向是 [y, y+height]），不是盒子中心。
+    // 所以下面填的是模型对应立方体的**底面 Y**，不是 pivot、也不是几何中心。
+    // 旧版把骨骼 pivot（中心）填了进来，导致所有部件整体偏高 1.5~4 格——
+    // 表现就是"看着打中了却打不到"。这次按新模型重算修正。
+    //
+    //   头部：立方体 origin[-64,384,-64] size[128,128,128]
+    //         → 格 x[-4,4] y[24,32] z[-4,4]   （8×8×8，与部件尺寸完全一致）
+    //   躯干：立方体 origin[-64,192,-32] size[128,192,64]
+    //         → 格 x[-4,4] y[12,24] z[-2,2]   （8 宽 × 12 高 × 4 厚）
+    //         ⚠️ 部件用 EntityDimensions.scalable(宽,高)，水平截面是正方形，
+    //            厚度无法单独设置，所以躯干部件在 z 方向会比模型厚 4 格。
 
-    /** 三片腐骨甲片的中心偏移（必须与模型骨骼对位，否则"看得见打不到"）。 */
-    private static final Vec3[] PLATE_OFFSETS = {
-            new Vec3(-2.125D, 19.50D, -2.3125D),
-            new Vec3(-0.125D, 18.625D, -2.3125D),
-            new Vec3(1.875D, 19.50D, -2.3125D),
-    };
+    /** 头部部件：底面 y=24，8 × 8 格。 */
+    private static final Vec3 HEAD_OFFSET = new Vec3(0.0D, 24.0D, 0.0D);
 
-    /** 头部部件中心（模型 head 中心约 Y=448 像素 = 28 格）。 */
-    private static final Vec3 HEAD_OFFSET = new Vec3(0.0D, 28.0D, 0.0D);
-
-    /** 躯干中心（模型 torso 段约 Y=152~368 像素）。 */
-    private static final Vec3 TORSO_OFFSET = new Vec3(0.0D, 16.25D, 0.0D);
+    /** 躯干部件：底面 y=12，8 宽 × 12 高。 */
+    private static final Vec3 CHEST_OFFSET = new Vec3(0.0D, 12.0D, 0.0D);
 
     // ---- GeckoLib 动画（M0.4）----
 
@@ -116,7 +116,6 @@ public class TitanZombie extends Monster implements GeoEntity {
     private final TitanPart[] parts;
     private final TitanPart head;
     private final TitanPart chest;
-    private final TitanPart[] bonePlates;
 
     public TitanZombie(EntityType<? extends TitanZombie> type, Level level) {
         super(type, level);
@@ -124,15 +123,12 @@ public class TitanZombie extends Monster implements GeoEntity {
         this.xpReward = 500;
 
         // 部件在构造时建好并缓存（NeoForge 注释要求 getParts() 返回缓存值）
-        // 尺寸按模型对应骨骼的立方体包围盒给（像素/16）
+        // 尺寸取模型对应立方体的包围盒（像素/16）。
+        // 2026-10-12：外观基线改为「原版僵尸 ×16」，三片腐骨甲片已从设计里去掉，
+        // 所以部件收敛成**头 + 胸**两个（四肢不做单独判定，命中即算在宿主身上）。
         this.head = new TitanPart(this, "head", 8.0F, 8.0F, HEAD_OFFSET);
-        this.chest = new TitanPart(this, "chest", 9.0F, 9.0F, TORSO_OFFSET);
-        this.bonePlates = new TitanPart[] {
-                new TitanPart(this, "bone_plate_0", 1.75F, 3.0F, PLATE_OFFSETS[0]),
-                new TitanPart(this, "bone_plate_1", 1.75F, 3.0F, PLATE_OFFSETS[1]),
-                new TitanPart(this, "bone_plate_2", 1.75F, 3.0F, PLATE_OFFSETS[2]),
-        };
-        this.parts = new TitanPart[] { head, chest, bonePlates[0], bonePlates[1], bonePlates[2] };
+        this.chest = new TitanPart(this, "chest", 8.0F, 12.0F, CHEST_OFFSET);
+        this.parts = new TitanPart[] { head, chest };
     }
 
     /** 属性在 {@link com.titanreborn.ModAttributes} 里通过 {@code EntityAttributeCreationEvent} 注册。 */
@@ -245,10 +241,6 @@ public class TitanZombie extends Monster implements GeoEntity {
         return parts;
     }
 
-    public TitanPart[] getBonePlates() {
-        return bonePlates;
-    }
-
     @Override
     public void tick() {
         super.tick();
@@ -283,17 +275,13 @@ public class TitanZombie extends Monster implements GeoEntity {
      * 部件受击入口。{@link TitanPart#hurt} 会转发到这里。
      *
      * <p>M0.3 的验证点：日志里必须能区分是哪个部件被打中。
+     *
+     * <p>2026-10-12：三片腐骨甲片已随外观基线简化去掉，破防判定因此暂时停用
+     * （见 {@code combat/TitanDamageRules}），新的破防条件等机制方案确定后再实现。
      */
     public boolean hurtPart(TitanPart part, DamageSource source, float amount) {
-        int broken = 0;
-        for (TitanPart plate : bonePlates) {
-            if (plate.getHitCount() > 0) {
-                broken++;
-            }
-        }
-        LOGGER.info("[M0.3] 命中部件={} 数量={} 伤害={} 甲片已触发={}/{} 来源={}",
-                part.getPartName(), part.getHitCount(), amount, broken, bonePlates.length,
-                source.getMsgId());
+        LOGGER.info("[M0.3] 命中部件={} 数量={} 伤害={} 来源={}",
+                part.getPartName(), part.getHitCount(), amount, source.getMsgId());
 
         // 把伤害交给宿主统一处理（伤害规则在 M0.5 的 LivingIncomingDamageEvent 里）
         return super.hurt(source, amount);

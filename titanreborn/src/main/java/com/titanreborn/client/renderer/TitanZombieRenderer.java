@@ -1,7 +1,6 @@
 package com.titanreborn.client.renderer;
 
 import com.titanreborn.client.model.TitanZombieModel;
-import com.titanreborn.client.renderer.layer.TitanArmorLayer;
 import com.titanreborn.client.renderer.layer.TitanSwordLayer;
 import com.titanreborn.entity.TitanZombie;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
@@ -21,9 +20,10 @@ import software.bernie.geckolib.renderer.GeoEntityRenderer;
  * <p><b>挂载的渲染层</b>（对应原版外观设定）：
  * <ul>
  *   <li>{@link TitanSwordLayer} —— 手持巨型铁剑（不烘进模型，换武器无需改模型）</li>
- *   <li>{@link TitanArmorLayer} —— 低血量时包覆全身的亮绿透明护甲</li>
  * </ul>
- * 橙黄色周身粒子仍待接入（在实体或客户端 tick 里生成）。
+ * <p><b>已摘除</b>：`TitanArmorLayer`（低血量亮绿护甲）。2026-10-12 确定的外观基线
+ * 是「原版僵尸 ×16 + 同比例铁剑」，不做护甲层；类保留在工程里，将来要用再挂回来。
+ * <p>橙黄色周身粒子由 {@code client/TitanParticles} 负责，不在渲染器上。
  */
 public class TitanZombieRenderer extends GeoEntityRenderer<TitanZombie> {
 
@@ -33,7 +33,5 @@ public class TitanZombieRenderer extends GeoEntityRenderer<TitanZombie> {
         this.shadowRadius = 8.0F;
         // 手持巨型铁剑
         this.addRenderLayer(new TitanSwordLayer(this));
-        // 低血量亮绿透明护甲
-        this.addRenderLayer(new TitanArmorLayer(this));
     }
 }

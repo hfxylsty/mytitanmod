@@ -1,7 +1,6 @@
 package com.titanreborn.combat;
 
 import com.titanreborn.entity.TitanZombie;
-import com.titanreborn.entity.part.TitanPart;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.entity.living.LivingIncomingDamageEvent;
@@ -39,8 +38,16 @@ public final class TitanDamageRules {
     private static final float MIN_EFFECTIVE_HIT = 20.0F;
     /** 伤害冷却：把无敌帧拉长到 1.5 秒（30 tick）。 */
     private static final int DAMAGE_COOLDOWN_TICKS = 30;
-    /** 破防所需的甲片数量（M0 验证用：3 片全打中即破防）。 */
-    private static final int PLATES_TO_BREAK = 3;
+
+    /**
+     * 管理员 / 命令类伤害的来源标识 —— 必须**原样放行**，不能套泰坦规则。
+     *
+     * <p>踩过的坑（2026-10-11 实测）：{@code /kill} 走的是 {@code genericKill} +
+     * {@code Float.MAX_VALUE}，被本规则归零后泰坦**杀不掉**；而且命令每次尝试都会
+     * 触发一次事件，实测 1 秒刷了 2.5 万行 {@code [M0.5]} 日志，把日志文件冲到 3 万行。
+     * 所以这类来源直接返回，既不改伤害也不打日志。
+     */
+    private static final java.util.Set<String> BYPASS_SOURCES = java.util.Set.of("genericKill", "generic_kill");
 
     private TitanDamageRules() {}
 
@@ -48,6 +55,11 @@ public final class TitanDamageRules {
     public static void onIncomingDamage(LivingIncomingDamageEvent event) {
         if (!(event.getEntity() instanceof TitanZombie titan)) {
             return;
+        }
+
+        String source = event.getSource().getMsgId();
+        if (BYPASS_SOURCES.contains(source)) {
+            return;   // /kill 等命令伤害原样放行
         }
 
         float original = event.getAmount();
@@ -72,23 +84,20 @@ public final class TitanDamageRules {
         event.setInvulnerabilityTicks(DAMAGE_COOLDOWN_TICKS);
 
         LOGGER.info("[M0.5] 泰坦受击 原始={} 最终={} 判定={} 破防={} 来源={}",
-                original, result, reason, isBroken(titan), event.getSource().getMsgId());
+                original, result, reason, isBroken(titan), source);
     }
 
     /**
-     * 破防判定：M0 的临时规则——3 片腐骨甲片都被击中过即破防。
+     * 破防判定 —— **当前临时停用，恒为 false**。
      *
-     * <p>M1 会改成完整的破防状态机（含破防窗口计时与保底阶段破防），
-     * 见 docs/03-gameplay-systems.md §2。
+     * <p>原因：2026-10-12 外观基线简化为「原版僵尸等比放大 16 倍 + 同比例铁剑」，
+     * 三片腐骨甲片（{@code bone_plate_0/1/2}）已从模型与部件中移除，
+     * 原先「打中 3 片甲片即破防」的临时规则失去依据。
+     *
+     * <p>新的破防条件属于机制设计，等方案定稿后再实现（候选：血量阈值保底 /
+     * 特定武器 / 击晕）。在此之前泰坦保持「未破防完全免伤」的行为。
      */
     public static boolean isBroken(TitanZombie titan) {
-        TitanPart[] plates = titan.getBonePlates();
-        int hit = 0;
-        for (TitanPart plate : plates) {
-            if (plate.getHitCount() > 0) {
-                hit++;
-            }
-        }
-        return hit >= PLATES_TO_BREAK;
+        return false;
     }
 }

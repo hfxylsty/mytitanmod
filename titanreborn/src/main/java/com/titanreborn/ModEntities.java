@@ -28,20 +28,22 @@ public final class ModEntities {
     /**
      * 僵尸泰坦。
      *
-     * <p><b>体型：32 格高 × 16 格宽</b>（≈16 倍僵尸）。
-     * 碰撞箱必须与模型严格对应，否则会"看着打中了却打不到"：
-     * 模型包围盒 X[-128,128] Y[0,512] → 256 × 512 像素 = <b>16 × 32 格</b>（1 格 = 16 像素）。
+     * <p><b>碰撞箱：9.6 × 31.2 格</b>（2026-10-12 按原版僵尸比例改定）。
      *
-     * <p>宽度依据：模型交付包标注 "BOSS / 32 blocks high / 16 blocks wide"，
-     * 且 `validation.json` 的 base_bounds 为 min[-128,0,-72] max[128,512,64]，
-     * 故宽取 <b>16</b>（早期文档里的 8 格是过时值，已更正）。
+     * <p>算法：原版僵尸实体是 {@code 0.6 × 1.95} 格，泰坦是它等比放大 16 倍
+     * → {@code 0.6 × 16 = 9.6}、{@code 1.95 × 16 = 31.2}。
+     *
+     * <p><b>为什么不是 16 × 32</b>：16 × 32 来自模型包围盒（256 × 512 像素，含双臂），
+     * 那是**视觉**尺寸。原版同样是「模型整体约 1 格宽 / 碰撞箱只有 0.6 格」，
+     * 两者本来就不相等；照搬模型包围盒会让判定比身体宽出一大截，
+     * 表现为"打空气也掉血"。
      *
      * <p>追踪范围给 32：32 格高的实体在默认 5 区块下会在视野里"突然出现"。
      */
     public static final DeferredHolder<EntityType<?>, EntityType<TitanZombie>> TITAN_ZOMBIE =
             ENTITY_TYPES.register("titan_zombie",
                     () -> EntityType.Builder.of(TitanZombie::new, MobCategory.MONSTER)
-                            .sized(16.0F, 32.0F)
+                            .sized(9.6F, 31.2F)
                             .clientTrackingRange(32)
                             .updateInterval(2)
                             .build("titan_zombie"));
