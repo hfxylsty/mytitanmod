@@ -1,6 +1,9 @@
 package com.titanreborn.entity;
 
 import com.titanreborn.entity.part.TitanPart;
+import net.minecraft.network.syncher.EntityDataAccessor;
+import net.minecraft.network.syncher.EntityDataSerializers;
+import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
@@ -103,13 +106,22 @@ public class TitanZombie extends Monster implements GeoEntity {
     private int attackTicks;
 
     /**
-     * 动画状态机的当前状态。
+     * 动作状态的**同步数据**。
      *
-     * <p>{@link TitanAction#NORMAL} = 交回自动逻辑（移动则 walk、静止则 idle）；
-     * 其他值 = 手动锁定在该动作。调试物品与战斗逻辑都通过
-     * {@link #setAction(TitanAction)} 改变它。
+     * <p>⚠️ 这里踩过一个让"状态机看起来是死的"的大坑：动画是在**客户端**渲染时选的
+     * （{@code registerControllers} 的 lambda 跑在渲染线程），而状态切换发生在
+     * **服务端**（战斗逻辑、调试杖）。早先用的是普通 Java 字段，改动永远传不到客户端，
+     * 于是客户端手里始终是初始值 {@link TitanAction#NORMAL}：
+     * <ul>
+     *   <li>调试杖/战斗设的 {@code ATTACK} 只在服务端日志里看得见，模型永远不播；</li>
+     *   <li>游戏内浮层读到的"动作"也一直是「正常（自动）」，与服务端日志互相矛盾
+     *       （2026-10-11 实测：服务端日志写「攻击 attack」，浮层同时显示「正常（自动）」）。</li>
+     * </ul>
+     * 所以状态必须走 {@link SynchedEntityData}（原版实体字段同步），
+     * 服务端一改，客户端下一 tick 就能看到。
      */
-    private TitanAction action = TitanAction.NORMAL;
+    private static final EntityDataAccessor<Integer> DATA_ACTION =
+            SynchedEntityData.defineId(TitanZombie.class, EntityDataSerializers.INT);
 
     private final AnimatableInstanceCache animationCache = GeckoLibUtil.createInstanceCache(this);
 
@@ -145,38 +157,49 @@ public class TitanZombie extends Monster implements GeoEntity {
     // ==================== 动作状态机（M1） ====================
 
     /**
-     * 状态机核心。
+     * 状态机核心（**跑在客户端渲染线程**）。
      *
-     * <p><b>为什么用 {@code setAnimation} 而不是 {@code setAndContinue}</b>：
-     * {@code setAndContinue} 会把动画走"过渡队列"（transition），过渡期间需要若干 tick
-     * 才真正生效；而 {@code setAnimation} 是**立即替换当前动画**。
-     * 我们的调试场景需要"按下就立刻看到那个动作"，所以用立即替换。
+     * <p>选哪个动画只依据 {@link #getAction()}（同步数据）与自动逻辑；
+     * 这里不做任何服务端才有的判断。
      *
-     * <p>每 tick 都调用 {@code setAnimation} 是安全的：传入的 {@link RawAnimation}
-     * 是静态常量，GeckoLib 用值比较（{@code RawAnimation} 覆写了 equals/hashCode），
-     * 相同动画不会重播。
+     * <p>每 tick 都调用是安全的：GeckoLib 的 {@code AnimationController.setAnimation}
+     * 会先比较 {@code RawAnimation}，相等且无需重载时直接跳过（读过 4.9.3 字节码确认），
+     * 不会把动画重置回第 0 帧。
      *
-     * <pre>
-     *   action 是具体动作（调试锁定）→ 播该动作
-     *   action == NORMAL            → 移动播 walk，静止播 idle
-     * </pre>
+     * <p>{@code NORMAL} 分支的移动判断做了两层：GeckoLib 的 {@code state.isMoving()}
+     * 加一层实体自身速度兜底——泰坦体型大、移动慢，只靠前者容易判成"静止"而一直播待机。
      */
     @Override
     public void registerControllers(AnimatableManager.ControllerRegistrar controllers) {
         AnimationController<TitanZombie> main = new AnimationController<>(this, MAIN_CONTROLLER, 0, state -> {
-            if (action == TitanAction.ATTACK) {
-                state.setAnimation(ATTACK_ONCE);
-            } else if (action == TitanAction.IDLE) {
-                state.setAnimation(IDLE);
-            } else if (action == TitanAction.WALK) {
-                state.setAnimation(WALK);
-            } else {
-                // NORMAL：交回自动逻辑
-                state.setAnimation(state.isMoving() ? WALK : IDLE);
+            TitanAction current = getAction();
+
+            if (current == TitanAction.ATTACK) {
+                return state.setAndContinue(ATTACK_ONCE);
             }
-            return PlayState.CONTINUE;
+            if (current == TitanAction.IDLE) {
+                return state.setAndContinue(IDLE);
+            }
+            if (current == TitanAction.WALK) {
+                return state.setAndContinue(WALK);
+            }
+
+            // NORMAL：交回自动逻辑
+            boolean moving = state.isMoving() || this.getDeltaMovement().horizontalDistanceSqr() > 1.0E-4D;
+            return state.setAndContinue(moving ? WALK : IDLE);
         });
         controllers.add(main);
+    }
+
+    /**
+     * 注册同步数据。
+     *
+     * <p>动作状态是服务端改、客户端读，必须走同步通道（原因见 {@link #DATA_ACTION}）。
+     */
+    @Override
+    protected void defineSynchedData(SynchedEntityData.Builder builder) {
+        super.defineSynchedData(builder);
+        builder.define(DATA_ACTION, TitanAction.NORMAL.ordinal());
     }
 
     @Override
@@ -184,25 +207,28 @@ public class TitanZombie extends Monster implements GeoEntity {
         return animationCache;
     }
 
-    /** 当前动作状态。 */
+    /** 当前动作状态（客户端读到的就是服务端同步过来的值）。 */
     public TitanAction getAction() {
-        return action;
+        TitanAction[] all = TitanAction.values();
+        int index = this.entityData.get(DATA_ACTION);
+        return (index >= 0 && index < all.length) ? all[index] : TitanAction.NORMAL;
     }
 
     /**
      * 切换动作状态。
      *
-     * <p>只在状态真的变化时记录日志，避免刷屏。
+     * <p>只在状态真的变化时记录日志，避免刷屏。写入的是同步数据，
+     * 所以客户端渲染线程下一 tick 就能拿到新状态。
      *
      * @param newAction 目标状态；{@link TitanAction#NORMAL} 表示交回自动逻辑
      * @return 是否真的发生了状态变化
      */
     public boolean setAction(TitanAction newAction) {
-        if (this.action == newAction) {
+        TitanAction old = getAction();
+        if (old == newAction) {
             return false;
         }
-        TitanAction old = this.action;
-        this.action = newAction;
+        this.entityData.set(DATA_ACTION, newAction.ordinal());
         LOGGER.info("[动作状态机] {} -> {} （实体 {}）",
                 old.displayName(), newAction.displayName(), this.getId());
         return true;
@@ -212,8 +238,9 @@ public class TitanZombie extends Monster implements GeoEntity {
     public TitanAction cycleAction() {
         // 调试切换时清掉攻击计时，避免上一次战斗攻击的余量把状态拉回去
         this.attackTicks = 0;
-        setAction(this.action.next());
-        return this.action;
+        TitanAction next = getAction().next();
+        setAction(next);
+        return next;
     }
 
     /**
@@ -246,7 +273,7 @@ public class TitanZombie extends Monster implements GeoEntity {
         super.tick();
 
         // 战斗驱动的攻击到点自动回落（否则泰坦会一直举着剑）
-        if (attackTicks > 0 && --attackTicks == 0 && action == TitanAction.ATTACK) {
+        if (attackTicks > 0 && --attackTicks == 0 && getAction() == TitanAction.ATTACK) {
             setAction(TitanAction.NORMAL);
         }
 
@@ -288,6 +315,23 @@ public class TitanZombie extends Monster implements GeoEntity {
     }
 
     // ==================== 泰坦基础规则 ====================
+
+    /**
+     * 近战命中时播一次攻击动画。
+     *
+     * <p>2026-10-11 排查发现的缺口：{@link #playAttackAnimation()} **没有任何调用方**——
+     * 也就是说泰坦真的打人时永远不会播攻击动作，只有调试杖能手动切到那个动作。
+     * 这里把它接到原版近战入口 {@code Mob.doHurtTarget}：服务端打中就置状态，
+     * 再由 {@link #DATA_ACTION} 同步给客户端渲染线程。
+     */
+    @Override
+    public boolean doHurtTarget(Entity target) {
+        boolean hurt = super.doHurtTarget(target);
+        if (hurt) {
+            playAttackAnimation();
+        }
+        return hurt;
+    }
 
     @Override
     public boolean causeFallDamage(float fallDistance, float multiplier, DamageSource source) {
