@@ -9,7 +9,15 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.entity.ai.goal.FloatGoal;
+import net.minecraft.world.entity.ai.goal.LookAtPlayerGoal;
+import net.minecraft.world.entity.ai.goal.MeleeAttackGoal;
+import net.minecraft.world.entity.ai.goal.RandomLookAroundGoal;
+import net.minecraft.world.entity.ai.goal.WaterAvoidingRandomStrollGoal;
+import net.minecraft.world.entity.ai.goal.target.HurtByTargetGoal;
+import net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal;
 import net.minecraft.world.entity.monster.Monster;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.entity.PartEntity;
@@ -152,6 +160,35 @@ public class TitanZombie extends Monster implements GeoEntity {
                 .add(Attributes.ARMOR, 22.0D)
                 .add(Attributes.KNOCKBACK_RESISTANCE, 1.0D)
                 .add(Attributes.FOLLOW_RANGE, 64.0D);
+    }
+
+    // ==================== AI（M1） ====================
+
+    /**
+     * 移动与攻击的 AI 目标（goals）。
+     *
+     * <p>⚠️ 2026-10-12 排查：本类原先**一个 goal 都没注册**。{@code Monster} 只提供属性，
+     * 既不会自己走路也不会打人，于是泰坦杵在原地不动——这直接导致：
+     * <ul>
+     *   <li>动画状态机的「自动」档永远选不到 walk（实体根本没在移动）；</li>
+     *   <li>近战入口 {@link #doHurtTarget} 永远不会被调用，攻击动画永远不播。</li>
+     * </ul>
+     * 也就是说，"动画像死的"有一半原因不是动画，而是**实体本身没有行为**。
+     *
+     * <p>这里按原版僵尸的最小组合补上：靠近并攻击玩家、随机踱步、会看人。
+     * 9.6 格宽的巨型生物寻路不一定处处可行，先保证「会动、会打」，
+     * 卡住的位置等实际试玩再调（例如换 {@code RandomStrollGoal} 或自定义移动控制）。
+     */
+    @Override
+    protected void registerGoals() {
+        this.goalSelector.addGoal(0, new FloatGoal(this));
+        this.goalSelector.addGoal(2, new MeleeAttackGoal(this, 1.0D, true));
+        this.goalSelector.addGoal(7, new WaterAvoidingRandomStrollGoal(this, 0.6D));
+        this.goalSelector.addGoal(8, new LookAtPlayerGoal(this, Player.class, 32.0F));
+        this.goalSelector.addGoal(8, new RandomLookAroundGoal(this));
+
+        this.targetSelector.addGoal(1, new HurtByTargetGoal(this));
+        this.targetSelector.addGoal(2, new NearestAttackableTargetGoal<>(this, Player.class, true));
     }
 
     // ==================== 动作状态机（M1） ====================
