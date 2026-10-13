@@ -114,6 +114,24 @@ public class TitanZombie extends Monster implements GeoEntity {
     private int attackTicks;
 
     /**
+     * 台阶高度上限（格）。
+     *
+     * <p>原模组直接给 {@code height × 0.5}，对 32 格高的泰坦就是 16 格——
+     * 意味着它能一步迈上 16 格高的悬崖，观感偏"瞬移"。
+     * 这里保守取 <b>4 格</b>：足够跨过绝大部分自然地形的坎（丘陵、石阶、1~3 格落差），
+     * 又不至于变成爬墙。等实机试玩后再调。
+     */
+    private static final float MAX_STEP_HEIGHT = 4.0F;
+
+    // ---- 临时移动诊断（排查"泰坦杵着不动"，定位后删除）----
+
+    /** 上一次诊断记录的位置，用来算这 1 秒里移动了多远。 */
+    private Vec3 lastDiagPos;
+
+    /** 上次诊断时累计走过的距离（格）。 */
+    private double diagTravel;
+
+    /**
      * 动作状态的**同步数据**。
      *
      * <p>⚠️ 这里踩过一个让"状态机看起来是死的"的大坑：动画是在**客户端**渲染时选的
@@ -156,7 +174,7 @@ public class TitanZombie extends Monster implements GeoEntity {
         return Monster.createMonsterAttributes()
                 .add(Attributes.MAX_HEALTH, 2048.0D)      // 设计值，待平衡
                 .add(Attributes.ATTACK_DAMAGE, 60.0D)
-                .add(Attributes.MOVEMENT_SPEED, 0.23D)
+                .add(Attributes.MOVEMENT_SPEED, 0.60D)   // 32 格巨兽：0.23 太慢看不出动，0.60 ≈ 每秒 1.8 格
                 .add(Attributes.ARMOR, 22.0D)
                 .add(Attributes.KNOCKBACK_RESISTANCE, 1.0D)
                 .add(Attributes.FOLLOW_RANGE, 64.0D);
@@ -217,7 +235,7 @@ public class TitanZombie extends Monster implements GeoEntity {
             if (current == TitanAction.IDLE) {
                 return state.setAndContinue(IDLE);
             }
-            if (current == TitanAction.WALK) {
+            if (current == TitanAction.WALK || current == TitanAction.TITAN_WALK) {
                 return state.setAndContinue(WALK);
             }
 
@@ -305,6 +323,27 @@ public class TitanZombie extends Monster implements GeoEntity {
         return parts;
     }
 
+    /**
+     * 台阶高度（自动翻越的最大高度）。
+     *
+     * <p><b>2026-10-13 关键修复。</b>实测泰坦"走两步就停"，根因就是这里：
+     * 1.21.1 的 {@code Entity.maxUpStep()} 默认返回 <b>0.0</b>、
+     * {@code LivingEntity} 也只是返回很小的值——对一个 9.6 格宽、32 格高的实体来说，
+     * **比半格高的坎都迈不过去**，寻路算出的路径全被自己撞死。
+     *
+     * <p>原模组的做法（{@code EntityPreTitan:219}、{@code EntityTitan:167}）是
+     * <b>{@code stepHeight = height × 0.5}</b>，台阶高度随体型增长。
+     * 32 格高的泰坦因此能迈上 16 格高的坎——<b>这就是它不需要绕路、也不需要飞行的原因</b>
+     * （原 mod 只有凋灵斯拉用了 {@code noClip + setNoGravity}，僵尸泰坦没有）。
+     *
+     * <p>这里照抄这个思路（台阶高度随体型走），但加了一道上限保险。
+     * 用覆写方法而不是写字段，是因为 1.21.1 没有 {@code setMaxUpStep} 之类的 setter。
+     */
+    @Override
+    public float maxUpStep() {
+        return Math.min(this.getBbHeight() * 0.5F, MAX_STEP_HEIGHT);
+    }
+
     @Override
     public void tick() {
         super.tick();
@@ -312,6 +351,20 @@ public class TitanZombie extends Monster implements GeoEntity {
         // 战斗驱动的攻击到点自动回落（否则泰坦会一直举着剑）
         if (attackTicks > 0 && --attackTicks == 0 && getAction() == TitanAction.ATTACK) {
             setAction(TitanAction.NORMAL);
+        }
+
+        // ---- 调试：强制向前走（真移动） ----
+        // 不走原版寻路，直接按朝向施加位移——巨型实体寻路容易失败，
+        // 调试时"按下就该动"，不该被地形挡住。
+        if (!this.level().isClientSide() && getAction().drivesMovement()) {
+            driveForward();
+        }
+
+        // ---- 临时移动诊断：只在"该动却没动"时报告，避免正常游玩刷屏 ----
+        // 判定条件：有攻击目标、且这 1 秒里几乎没动 —— 这正是"卡住"的特征。
+        // 排查完删掉。
+        if (!this.level().isClientSide() && this.tickCount % 20 == 0) {
+            logMovementDiagnostics();
         }
 
         // 宿主负责摆放部件：必须每 tick 做，否则部件会留在原地
@@ -324,6 +377,69 @@ public class TitanZombie extends Monster implements GeoEntity {
         for (TitanPart part : parts) {
             part.setOldPosAndRot();
         }
+    }
+
+    /**
+     * 强制向前走：按当前朝向施加位移。
+     *
+     * <p>用 {@code move()} 而不是直接改坐标，这样会走原版的碰撞与地面判定
+     * （不会穿墙、不会浮空）。速度用实体自己的移动速度属性，
+     * 保证与"走路"的观感一致。
+     */
+    private void driveForward() {
+        double speed = this.getAttributeValue(net.minecraft.world.entity.ai.attributes.Attributes.MOVEMENT_SPEED);
+        double yawRad = Math.toRadians(this.getYRot());
+        double dx = -Math.sin(yawRad) * speed;
+        double dz = Math.cos(yawRad) * speed;
+        this.move(net.minecraft.world.entity.MoverType.SELF, new Vec3(dx, 0.0D, dz));
+        // 让动画层的 isMoving() 能判到"在动"
+        this.walkAnimation.update((float) (speed * 8.0D), 0.4F);
+    }
+
+    /**
+     * 「该动却没动」诊断：有攻击目标、但这 1 秒里几乎没位移时打印。
+     *
+     * <p>排查"泰坦杵着不动"的关键证据，分别回答三个问题：
+     * <ol>
+     *   <li>AI 有没有选中目标？（{@code 目标=}）</li>
+     *   <li>寻路状态如何？（{@code 寻路=}）</li>
+     *   <li>实体坐标有没有真的变化？（{@code 位移=}、{@code 累计=}）</li>
+     * </ol>
+     *
+     * <p>只报告异常情况（有目标却不动），正常游走不打印，避免刷屏。
+     */
+    private void logMovementDiagnostics() {
+        Vec3 pos = this.position();
+        if (lastDiagPos == null) {
+            lastDiagPos = pos;
+            return;
+        }
+        double moved = pos.distanceTo(lastDiagPos);
+        diagTravel += moved;
+        lastDiagPos = pos;
+
+        var target = this.getTarget();
+        // 没目标就别报（随机游走本来就时动时停）
+        if (target == null) {
+            return;
+        }
+        // 动了就正常，不报
+        if (moved > 0.05D) {
+            return;
+        }
+
+        var nav = this.getNavigation();
+        String targetInfo = target.getName().getString()
+                + "@" + String.format("%.1f", this.distanceTo(target)) + "格";
+        String pathInfo = nav.isInProgress()
+                ? "进行中(剩余" + nav.getPath().getNodeCount() + "节点)"
+                : (nav.isDone() ? "已完成(未移动)" : "未开始");
+
+        LOGGER.info("[移动诊断] ⚠有目标但未移动: 位移={}格 累计={}格 速度={} 目标={} 寻路={} 动作={} 坐标={}",
+                String.format("%.3f", moved), String.format("%.1f", diagTravel),
+                String.format("%.3f", this.getDeltaMovement().horizontalDistance()),
+                targetInfo, pathInfo, getAction().displayName(),
+                String.format("%.1f/%.1f/%.1f", pos.x, pos.y, pos.z));
     }
 
     @Override

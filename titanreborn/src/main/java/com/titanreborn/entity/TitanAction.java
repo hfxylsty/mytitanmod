@@ -30,6 +30,18 @@ public enum TitanAction {
     /** 行走（循环）。 */
     WALK("animation.titan_zombie.walk"),
 
+    /**
+     * 强制向前走（调试用）。
+     *
+     * <p>与 {@link #WALK} 的区别：{@link #WALK} **只播走路的动画**，实体坐标不变，
+     * 看起来就是"原地迈腿"；本状态**同时驱动实体真的向前移动**，
+     * 用来验证"实体移动 + 走路动画"这条完整链路。
+     *
+     * <p>移动由 {@link TitanZombie#tick()} 直接施加位移实现，**不走原版寻路**——
+     * 巨型实体寻路容易失败，调试时不该被地形挡住。
+     */
+    TITAN_WALK("animation.titan_zombie.walk"),
+
     /** 攻击（播放一次）。 */
     ATTACK("animation.titan_zombie.attack");
 
@@ -54,18 +66,25 @@ public enum TitanAction {
         return switch (this) {
             case NORMAL -> "正常（自动）";
             case IDLE -> "待机 idle";
-            case WALK -> "行走 walk";
+            case WALK -> "行走 walk（原地）";
+            case TITAN_WALK -> "向前走 walk（真移动）";
             case ATTACK -> "攻击 attack";
         };
     }
 
-    /** 调试用的循环顺序：正常 → 待机 → 行走 → 攻击 → 正常。 */
+    /** 调试用的循环顺序：正常 → 待机 → 行走 → 向前走 → 攻击 → 正常。 */
     public TitanAction next() {
         return switch (this) {
             case NORMAL -> IDLE;
             case IDLE -> WALK;
-            case WALK -> ATTACK;
+            case WALK -> TITAN_WALK;
+            case TITAN_WALK -> ATTACK;
             case ATTACK -> NORMAL;
         };
+    }
+
+    /** 是否驱动实体真正移动（目前只有 {@link #TITAN_WALK}）。 */
+    public boolean drivesMovement() {
+        return this == TITAN_WALK;
     }
 }

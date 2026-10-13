@@ -22,6 +22,12 @@ neoForge {
     version = '21.1.252'
     runs {
         client { client() }
+        // 验收用客户端：自动进入验证世界 run/saves/titanverify（由 tools/verify-m1.ps1 每次重建）
+        clientVerify {
+            client()
+            programArgument '--quickPlaySingleplayer'
+            programArgument 'titanverify'
+        }
         server { server() }
     }
     mods {

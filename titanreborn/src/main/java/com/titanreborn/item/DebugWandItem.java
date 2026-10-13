@@ -72,8 +72,9 @@ public class DebugWandItem extends Item {
     @Override
     public void appendHoverText(ItemStack stack, TooltipContext context,
                                 List<Component> tooltip, TooltipFlag flag) {
-        tooltip.add(Component.literal("§7开发调试工具：手动播放泰坦动作"));
-        tooltip.add(Component.literal("§7右键：§f循环切换 正常→待机→行走→攻击"));
-        tooltip.add(Component.literal("§7作用对象：最近的僵尸泰坦"));
+        tooltip.add(Component.literal("§7开发调试工具：控制最近的僵尸泰坦"));
+        tooltip.add(Component.literal("§7右键：§f循环 正常→待机→原地走→§a向前走§f→攻击"));
+        tooltip.add(Component.literal("§7选中§a向前走§7时它会真的往前移动"));
+        tooltip.add(Component.literal("§7作用对象：最近的僵尸泰坦（48 格内）"));
     }
 }
