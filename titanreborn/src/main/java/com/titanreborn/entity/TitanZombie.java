@@ -116,12 +116,14 @@ public class TitanZombie extends Monster implements GeoEntity {
     /**
      * 台阶高度上限（格）。
      *
-     * <p>原模组直接给 {@code height × 0.5}，对 32 格高的泰坦就是 16 格——
-     * 意味着它能一步迈上 16 格高的悬崖，观感偏"瞬移"。
-     * 这里保守取 <b>4 格</b>：足够跨过绝大部分自然地形的坎（丘陵、石阶、1~3 格落差），
-     * 又不至于变成爬墙。等实机试玩后再调。
+     * <p><b>2026-10-14：按用户要求放开到 16 格，照抄原模组。</b>
+     * 原版给 {@code height × 0.5}，对 32 格高的泰坦就是 16 格。
+     *
+     * <p>先前保守取 4 格，实测**依然会卡**——泰坦在自然地形上还是会被挡住、
+     * 表现为「会看向玩家但不走过来、更像随机游荡」。
+     * 用户的要求是「让泰坦能跨过一切障碍」，对一个能踩碎小怪的巨兽来说也合理。
      */
-    private static final float MAX_STEP_HEIGHT = 4.0F;
+    private static final float MAX_STEP_HEIGHT = 16.0F;
 
     // ---- 临时移动诊断（排查"泰坦杵着不动"，定位后删除）----
 
@@ -435,10 +437,21 @@ public class TitanZombie extends Monster implements GeoEntity {
                 ? "进行中(剩余" + nav.getPath().getNodeCount() + "节点)"
                 : (nav.isDone() ? "已完成(未移动)" : "未开始");
 
-        LOGGER.info("[移动诊断] ⚠有目标但未移动: 位移={}格 累计={}格 速度={} 目标={} 寻路={} 动作={} 坐标={}",
+        // 关键：确认台阶高度覆写真的生效，以及寻路能否算出到目标的路径
+        boolean canReach = false;
+        try {
+            canReach = nav.createPath(target, 1) != null;
+        } catch (Throwable ignored) {
+            // 某些情况下 createPath 可能抛异常，不能让诊断本身崩掉
+        }
+
+        LOGGER.info("[移动诊断] ⚠有目标但未移动: 位移={}格 累计={}格 速度={} 目标={} 寻路={} "
+                        + "台阶高度={}格 可寻路={} 动作={} 坐标={}",
                 String.format("%.3f", moved), String.format("%.1f", diagTravel),
                 String.format("%.3f", this.getDeltaMovement().horizontalDistance()),
-                targetInfo, pathInfo, getAction().displayName(),
+                targetInfo, pathInfo,
+                String.format("%.2f", this.maxUpStep()), canReach ? "是" : "否",
+                getAction().displayName(),
                 String.format("%.1f/%.1f/%.1f", pos.x, pos.y, pos.z));
     }
 
