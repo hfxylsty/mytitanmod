@@ -8,7 +8,7 @@
 > - 贴图 `textures/entity/titan_zombie.png`（256×256）
 > - 护甲层 `titan_zombie_armor.geo.json` + `.png`（外扩 3 像素、alpha≈140）
 > - 独立铁剑 `titan_iron_sword.geo.json` + `.png`（剑长 172 像素 ≈ 10.75 格）
-> - Blockbench 工程 `titan_zombie.bbmodel` / `titan_iron_sword.bbmodel`（**改模型要用它们**）
+> - Blockbench 工程 ``titan_zombie.bbmodel`（**改模型要用它们**）
 > - 离线预览 `preview.html`、三视图 `turnaround.png`
 >
 > 代码侧已接入：手持铁剑渲染层、低血量亮绿护甲层、橙黄粒子。

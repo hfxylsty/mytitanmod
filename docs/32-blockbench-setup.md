@@ -89,11 +89,11 @@ Get-AuthenticodeSignature <文件路径> | Select-Object Status, SignerCertifica
 
 | 文件 | 说明 |
 |---|---|
-| `titan_zombie.bbmodel` | 僵尸泰坦本体工程（含内嵌贴图） |
-| `titan_iron_sword.bbmodel` | 独立铁剑工程 |
-| `turnaround.png` | 三视图（正视/侧视/背视） |
-| `preview.html` | 离线旋转与动画预览（可勾选护甲） |
-| `validation.json` | 尺寸/UV/动画的结构校验结果 |
+| `titan_zombie.geo.json` | 模型（Bedrock 几何，游戏实际读取） |
+| `titan_zombie.png` | 贴图 256×256（含原版铁剑贴图） |
+| `titan_zombie.bbmodel` | Blockbench 工程（编辑用，需自己另存） |
+| `README.md` | **操作说明（先看这个）** |
+
 
 改完模型后导出覆盖这三个同名文件即可，**Java 代码不用动**：
 - `assets/titanreborn/geo/entity/titan_zombie.geo.json`
