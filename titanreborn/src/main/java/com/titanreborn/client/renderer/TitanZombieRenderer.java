@@ -41,7 +41,7 @@ import software.bernie.geckolib.renderer.layer.BlockAndItemGeoLayer;
 public class TitanZombieRenderer extends GeoEntityRenderer<TitanZombie> {
 
     /** 持剑骨骼名。 */
-    private static final String HAND_BONE = "right_arm";
+    private static final String HAND_BONE = "upperarm_R";
 
     /** 手掌相对肩部枢轴的偏移（格）。手臂长 160 像素 = 10 格，方向为骨骼局部 -Y。 */
     private static final double HAND_OFFSET_BLOCKS = 10.0D;
