@@ -169,6 +169,12 @@ public class TitanZombie extends Monster implements GeoEntity {
         this.head = new TitanPart(this, "head", 8.0F, 8.0F, HEAD_OFFSET);
         this.chest = new TitanPart(this, "chest", 8.0F, 12.0F, CHEST_OFFSET);
         this.parts = new TitanPart[] { head, chest };
+
+        // 主手装备铁剑。泰坦本质就是僵尸，直接复用原版的装备槽：
+        // 物品由 BlockAndItemGeoLayer 渲染到 right_arm 骨骼上，
+        // 不在 geo 模型里烘剑（那条路 GeckoLib 不渲染）。
+        this.setItemSlot(net.minecraft.world.entity.EquipmentSlot.MAINHAND,
+                new net.minecraft.world.item.ItemStack(net.minecraft.world.item.Items.IRON_SWORD));
     }
 
     /** 属性在 {@link com.titanreborn.ModAttributes} 里通过 {@code EntityAttributeCreationEvent} 注册。 */
