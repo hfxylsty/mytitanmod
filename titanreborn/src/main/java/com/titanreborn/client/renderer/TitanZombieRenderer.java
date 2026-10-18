@@ -56,8 +56,8 @@ public class TitanZombieRenderer extends GeoEntityRenderer<TitanZombie> {
      * </pre>
      * 所以「往前」= 增大 FORWARD，「往下」= 减小 UP（取负值）。
      */
-    private static final double SWORD_NUDGE_FORWARD = -1.5D;
-    private static final double SWORD_NUDGE_UP = -3.5D;
+    private static final double SWORD_NUDGE_FORWARD = 6.5D;
+    private static final double SWORD_NUDGE_DOWN = 2.0D;
 
     /** 原版 ItemInHandLayer 的手部偏移（格），见 renderArmWithItem。 */
     private static final float HAND_OFFSET_X = 1.0F / 16.0F;
@@ -91,7 +91,7 @@ public class TitanZombieRenderer extends GeoEntityRenderer<TitanZombie> {
                 poseStack.translate(0.0D, -HAND_OFFSET_BLOCKS, 0.0D);
                 // 手掌位置的微调（格）。绕 X 的旋转不改变 X 轴，故：
                 //   局部 +X = 世界"右"，局部 +Z = 世界"下"
-                poseStack.translate(0.0D, SWORD_NUDGE_FORWARD, SWORD_NUDGE_UP);
+                poseStack.translate(0.0D, SWORD_NUDGE_DOWN, SWORD_NUDGE_FORWARD);
                 // ② 建立**原版手部空间**，这是 THIRD_PERSON_RIGHT_HAND 显示变换的前提。
                 //    见 ItemInHandLayer#renderArmWithItem：这两次旋转不可省，
                 //    否则物品会按错误基准空间变换（实测表现为剑尖朝斜后方）。
