@@ -60,4 +60,7 @@ local.properties
 *.local
 
 # --- DSH 会话态 ---
-.dsh/
+# 整个 .dsh/ 都是本机会话状态，但 skills/ 是可复用的项目知识，需要入库
+.dsh/*
+!.dsh/skills/
+!.dsh/skills/**
