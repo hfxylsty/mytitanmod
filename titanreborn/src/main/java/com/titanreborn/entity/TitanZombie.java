@@ -108,7 +108,7 @@ public class TitanZombie extends Monster implements GeoEntity {
      * <p>依据交付模型的动作时长：attack = 1.2 秒 = 24 tick，留一点余量取 26。
      * <b>注意</b>：这里写死时长是权宜之计；若以后换了攻击动画时长，必须同步改。
      */
-    private static final int ATTACK_DURATION_TICKS = 26;
+    private static final int ATTACK_DURATION_TICKS = 32;
 
     /** 战斗驱动的攻击剩余 tick；> 0 时到点自动回 {@link TitanAction#NORMAL}。 */
     private int attackTicks;
