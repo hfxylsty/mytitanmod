@@ -85,6 +85,10 @@ public class TitanZombie extends Monster implements GeoEntity {
     /** 控制器名，供调试与日志使用。 */
     private static final String MAIN_CONTROLLER = "main";
 
+    /** 动画诊断日志（仅客户端，每 10 tick 打印一次；定位完可移除）。 */
+    private static final org.slf4j.Logger ANIM_LOG =
+            org.slf4j.LoggerFactory.getLogger("titanreborn/anim-diag");
+
     /** 自动逻辑用的两个循环动画（对应 {@link TitanAction#IDLE} / {@link TitanAction#WALK}）。 */
     private static final RawAnimation IDLE =
             RawAnimation.begin().thenLoop("animation.titan_zombie.idle");
@@ -237,19 +241,50 @@ public class TitanZombie extends Monster implements GeoEntity {
         AnimationController<TitanZombie> main = new AnimationController<>(this, MAIN_CONTROLLER, 0, state -> {
             TitanAction current = getAction();
 
+            PlayState result;
+            String requested;
             if (current == TitanAction.ATTACK) {
-                return state.setAndContinue(ATTACK_ONCE);
-            }
-            if (current == TitanAction.IDLE) {
-                return state.setAndContinue(IDLE);
-            }
-            if (current == TitanAction.WALK || current == TitanAction.TITAN_WALK) {
-                return state.setAndContinue(WALK);
+                // 安全网：攻击动画已经播完被 GeckoLib 停止（状态 STOPPED）时，
+                // 再请求同一个 PLAY_ONCE 会被 setAndContinue 的"相同 RawAnimation 跳过"
+                // 逻辑忽略，模型会一直停在静止姿态。此时回落到自动逻辑，
+                // 等服务端把 action 改回 NORMAL。
+                if (state.getController().getAnimationState()
+                        == AnimationController.State.STOPPED) {
+                    boolean movingFallback = state.isMoving()
+                            || this.getDeltaMovement().horizontalDistanceSqr() > 1.0E-4D;
+                    requested = "attack已播完->" + (movingFallback ? "walk" : "idle");
+                    result = state.setAndContinue(movingFallback ? WALK : IDLE);
+                } else {
+                    requested = "attack";
+                    result = state.setAndContinue(ATTACK_ONCE);
+                }
+            } else if (current == TitanAction.IDLE) {
+                requested = "idle";
+                result = state.setAndContinue(IDLE);
+            } else if (current == TitanAction.WALK || current == TitanAction.TITAN_WALK) {
+                requested = "walk";
+                result = state.setAndContinue(WALK);
+            } else {
+                // NORMAL：交回自动逻辑
+                boolean moving = state.isMoving() || this.getDeltaMovement().horizontalDistanceSqr() > 1.0E-4D;
+                requested = moving ? "walk(自动)" : "idle(自动)";
+                result = state.setAndContinue(moving ? WALK : IDLE);
             }
 
-            // NORMAL：交回自动逻辑
-            boolean moving = state.isMoving() || this.getDeltaMovement().horizontalDistanceSqr() > 1.0E-4D;
-            return state.setAndContinue(moving ? WALK : IDLE);
+            // ---- 动画诊断：攻击结束后姿态掉回静止时用来定位问题 ----
+            if (this.level().isClientSide() && this.tickCount % 10 == 0) {
+                try {
+                    var controller = state.getController();
+                    var anim = controller.getCurrentAnimation();
+                    ANIM_LOG.info("[动画诊断] action={} 请求={} 实际动画={} 控制器状态={}",
+                            current, requested,
+                            anim == null ? "null" : anim.animation().name(),
+                            controller.getAnimationState());
+                } catch (Throwable ignored) {
+                    // 诊断代码不能影响渲染
+                }
+            }
+            return result;
         });
         controllers.add(main);
     }
@@ -303,6 +338,10 @@ public class TitanZombie extends Monster implements GeoEntity {
         this.attackTicks = 0;
         TitanAction next = getAction().next();
         setAction(next);
+        // 调试杖切到 ATTACK 时同样要计时，否则会永远卡在攻击状态
+        if (next == TitanAction.ATTACK) {
+            this.attackTicks = ATTACK_DURATION_TICKS;
+        }
         return next;
     }
 
@@ -357,8 +396,18 @@ public class TitanZombie extends Monster implements GeoEntity {
         super.tick();
 
         // 战斗驱动的攻击到点自动回落（否则泰坦会一直举着剑）
-        if (attackTicks > 0 && --attackTicks == 0 && getAction() == TitanAction.ATTACK) {
-            setAction(TitanAction.NORMAL);
+        // 2026-10-21 修复：此前写成 `attackTicks > 0 && --attackTicks == 0 && action==ATTACK`，
+        // 若 ATTACK 不是从 playAttackAnimation() 进来的（例如调试杖 cycleAction()
+        // 先把 attackTicks 清零再切到 ATTACK），attackTicks 恒为 0，条件短路，
+        // 永远不回落 -> 客户端卡在 ATTACK，攻击动画播完后被 GeckoLib 停止
+        // （控制器 STOPPED），模型掉回静止姿态（双手下垂）。
+        if (getAction() == TitanAction.ATTACK) {
+            if (attackTicks <= 0) {
+                // 兜底：任何途径进入 ATTACK 都保证有时长，下一 tick 开始计
+                attackTicks = ATTACK_DURATION_TICKS;
+            } else if (--attackTicks == 0) {
+                setAction(TitanAction.NORMAL);
+            }
         }
 
         // ---- 调试：强制向前走（真移动） ----
